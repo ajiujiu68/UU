@@ -1,0 +1,650 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>错单</title>
+    <style>
+        /* 基础重置与字体设置 */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #e8e8e8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            min-height: 100vh;
+            padding: 40px 20px;
+            gap: 24px;
+            flex-wrap: wrap; /* 屏幕太窄时自动换行 */
+        }
+
+        /* 统一的隐藏规则（删除账户栏时使用） */
+        [hidden] {
+            display: none !important;
+        }
+
+        /* 模拟 macOS 窗口 */
+        .window {
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .main-window {
+            flex: 1;
+            min-width: 700px;
+            max-width: 950px;
+        }
+
+        .edit-window {
+            width: 380px;
+            flex-shrink: 0;
+        }
+
+        /* 窗口顶部栏 */
+        .title-bar {
+            background-color: #e4e4e4;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            border-bottom: 1px solid #d1d1d1;
+        }
+
+        .mac-buttons {
+            display: flex;
+            gap: 8px;
+            margin-right: 16px;
+        }
+
+        .mac-buttons span {
+            width: 13px;
+            height: 13px;
+            border-radius: 50%;
+            display: inline-block;
+        }
+
+        .btn-close { background-color: #ff5f56; border: 0.5px solid #e0443e; }
+        .btn-minimize { background-color: #ffbd2e; border: 0.5px solid #dea123; }
+        .btn-maximize { background-color: #27c93f; border: 0.5px solid #1aab29; }
+
+        .window-title {
+            color: #4a4a4a;
+            font-size: 14px;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+        }
+
+        /* 内容区 */
+        .content {
+            display: flex;
+            padding: 40px 50px 40px 30px;
+            background-color: #f9f9f9;
+        }
+
+        .icon-area {
+            width: 200px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            padding-top: 10px;
+        }
+
+        .warning-icon {
+            width: 140px;
+            height: 140px;
+            filter: drop-shadow(0px 0px 20px rgba(211, 47, 47, 0.4));
+        }
+
+        .text-area {
+            flex-grow: 1;
+            color: #2d2d2d;
+            min-width: 0;
+        }
+
+        h1 {
+            font-size: 26px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #111;
+        }
+
+        .intro-text {
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 30px;
+            color: #333;
+        }
+
+        .sub-heading {
+            display: flex;
+            align-items: center;
+            font-size: 17px;
+            font-weight: 700;
+            color: #b32424;
+            margin-bottom: 16px;
+        }
+
+        .sub-heading::before {
+            content: "";
+            display: inline-block;
+            width: 4px;
+            height: 18px;
+            background-color: #c73a3a;
+            margin-right: 10px;
+            border-radius: 2px;
+        }
+
+        .alert-block {
+            background-color: #fdf1f1;
+            border-left: 5px solid #c73a3a;
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 12px;
+            font-size: 14.5px;
+            line-height: 1.8;
+        }
+
+        .alert-block .label {
+            font-weight: 700;
+            color: #b32424;
+        }
+
+        .success-block {
+            background-color: #e9f7ef;
+            border-left: 5px solid #38b26c;
+            border-radius: 4px;
+            padding: 16px 20px;
+            margin-bottom: 24px;
+            font-size: 14.5px;
+            line-height: 1.8;
+            color: #217a48;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap; /* 防止长内容溢出 */
+            gap: 4px;
+        }
+
+        /* ================= 统一输入框组合样式 ================= */
+
+        /* 括号包裹容器 */
+        .code-input-wrapper {
+            display: inline-flex;
+            align-items: center;
+            background-color: #ffffff;
+            border: 1px solid #dcdcdc;
+            border-radius: 4px;
+            padding: 2px 6px;
+            vertical-align: middle;
+            transition: all 0.2s;
+        }
+
+        /* 兼容左侧只读状态 */
+        .main-window .code-input-wrapper {
+            background-color: transparent;
+            border-color: transparent;
+        }
+        .main-window .code-input-wrapper:hover {
+            border-color: #dcdcdc;
+            background-color: #ffffff;
+        }
+
+        /* 成功块的绿色微调 */
+        .success-block .code-input-wrapper {
+            border-color: transparent;
+        }
+
+        /* 括号符号 */
+        .code-input-wrapper .bracket {
+            color: #777;
+            font-family: "SFMono-Regular", Consolas, monospace;
+            font-size: 13px;
+            font-weight: 600;
+            user-select: none; /* 括号不需要被选中 */
+        }
+
+        /* 内部输入框 */
+        .code-input-wrapper input {
+            border: none;
+            outline: none;
+            background: transparent;
+            color: #333;
+            font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, Courier, monospace;
+            font-size: 13px;
+            font-weight: 600;
+            padding: 0;
+            margin: 0 2px;
+            width: auto;
+            /* 支持现代浏览器的内容自适应 */
+            field-sizing: content;
+            min-width: 30px;
+        }
+
+        /* 只读状态 */
+        .main-window .code-input-wrapper input {
+            color: #2d2d2d;
+            cursor: text; /* 允许选中复制 */
+        }
+        .success-block .code-input-wrapper input {
+            color: #217a48;
+        }
+
+        /* ----------------- 底部文本与按钮 ----------------- */
+        .outro-text {
+            font-size: 14.5px;
+            line-height: 1.6;
+            color: #333;
+            margin-bottom: 24px;
+            margin-top: 10px;
+        }
+
+        hr {
+            border: none;
+            border-top: 1px solid #e0e0e0;
+            margin: 24px 0;
+        }
+
+        .footer-note {
+            font-size: 13px;
+            color: #777;
+            font-style: italic;
+        }
+
+        .button-group {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-family: inherit;
+        }
+
+        .btn-secondary {
+            background-color: #ffffff;
+            color: #333;
+            border: 1px solid #d1d1d1;
+        }
+
+        .btn-secondary:hover {
+            background-color: #f5f5f5;
+        }
+
+        .btn-primary {
+            background-color: #c73333;
+            color: #ffffff;
+            border: 1px solid #c73333;
+            box-shadow: 0 2px 4px rgba(199, 51, 51, 0.2);
+        }
+
+        .btn-primary:hover {
+            background-color: #b32b2b;
+        }
+
+        /* ================= 右侧编辑栏 ================= */
+        .edit-window .content {
+            display: block;
+            padding: 24px 30px 30px 30px;
+        }
+
+        .edit-window h2 {
+            font-size: 18px;
+            font-weight: 700;
+            color: #333;
+            margin-bottom: 6px;
+        }
+
+        .edit-window .subtitle {
+            font-size: 13px;
+            color: #666;
+            margin-bottom: 20px;
+            line-height: 1.4;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            margin-bottom: 12px;
+        }
+
+        .form-group label {
+            font-size: 13px;
+            color: #555;
+            font-weight: 600;
+            margin-bottom: 6px;
+        }
+
+        /* 右侧编辑栏的输入框容器填满宽度 */
+        .edit-window .code-input-wrapper {
+            width: 100%;
+            padding: 6px 10px;
+            margin: 0;
+            border-color: #ccc;
+        }
+
+        .edit-window .code-input-wrapper:focus-within {
+            border-color: #c73333;
+            box-shadow: 0 0 0 2px rgba(199, 51, 51, 0.2);
+            background-color: #ffffff;
+        }
+
+        .edit-window .code-input-wrapper input {
+            flex: 1; /* 撑满剩余空间 */
+            field-sizing: fixed; /* 右侧不需要自适应，固定填充即可 */
+            width: 100%;
+        }
+
+        /* ================= 账户组（可删除） ================= */
+        .pair-block {
+            position: relative;
+        }
+
+        /* 分组标题行 */
+        .pair-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin: 16px 0 10px;
+            padding-bottom: 6px;
+            border-bottom: 1px dashed #dedede;
+        }
+
+        .pair-block:first-of-type .pair-header {
+            margin-top: 0;
+        }
+
+        .pair-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #999;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+
+        /* 删除按钮 */
+        .btn-delete {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            border: 1px solid transparent;
+            background-color: transparent;
+            color: #c73333;
+            font-size: 12px;
+            font-weight: 600;
+            font-family: inherit;
+            padding: 3px 9px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.18s ease;
+            line-height: 1.2;
+        }
+
+        .btn-delete:hover {
+            background-color: #fdecec;
+            border-color: #f3cfcf;
+        }
+
+        .btn-delete:active {
+            transform: scale(0.96);
+        }
+
+        .btn-delete svg {
+            width: 11px;
+            height: 11px;
+            fill: currentColor;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 左侧：原始警告窗口 (只读) -->
+    <div class="window main-window">
+        <div class="title-bar">
+            <div class="mac-buttons">
+                <span class="btn-close"></span>
+                <span class="btn-minimize"></span>
+                <span class="btn-maximize"></span>
+            </div>
+            <div class="window-title">Systemwarnung - Handelssystemverwaltung</div>
+        </div>
+
+        <div class="content">
+            <div class="icon-area">
+                <svg class="warning-icon" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <polygon points="30,5 70,5 95,30 95,70 70,95 30,95 5,70 5,30" fill="#d32f2f" stroke="#ffffff" stroke-width="3"/>
+                    <rect x="46" y="25" width="8" height="35" rx="4" fill="#ffffff"/>
+                    <circle cx="50" cy="72" r="5" fill="#ffffff"/>
+                </svg>
+            </div>
+
+            <div class="text-area">
+                <h1>Handelssystemverwaltung</h1>
+
+                <p class="intro-text">
+                    Guten Tag! Wir haben soeben eine Benachrichtigung über eine fehlerhafte Transaktion erhalten. Ihre aktuelle Transaktion wurde als <strong>unbekannte Transaktion</strong> markiert.
+                </p>
+
+                <div class="sub-heading">Systembericht anfordern</div>
+
+                <!-- 红色警告 1 -->
+                <div class="alert-block" data-pair-block="1">
+                    <span class="label">Plattformkonto:</span>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" id="display-account1" value="Valeria0202" readonly>
+                        <span class="bracket">]</span>
+                    </div>
+                    &nbsp;&nbsp;
+                    <span class="label">Auftragsstatus:</span> <span style="color: #2d2d2d;">Zuordnung fehlgeschlagen</span><br>
+                    <span class="label">Datenbericht:</span> <span style="color: #2d2d2d;">Fehler im Investmentprojekt-Datensatz</span>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" id="display-report1" value="BTC/USDT Long kaufen 180S" readonly>
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+
+                <!-- 红色警告 2（可被删除） -->
+                <div class="alert-block" data-pair-block="2">
+                    <span class="label">Plattformkonto:</span>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" id="display-account2" value="41793302974" readonly>
+                        <span class="bracket">]</span>
+                    </div>
+                    &nbsp;&nbsp;
+                    <span class="label">Auftragsstatus:</span> <span style="color: #2d2d2d;">Zuordnung fehlgeschlagen</span><br>
+                    <span class="label">Datenbericht:</span> <span style="color: #2d2d2d;">Fehler im Investmentprojekt-Datensatz</span>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" id="display-report2" value="BTC/USDT Short kaufen 180S" readonly>
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+
+                <!-- 绿色修正块 -->
+                <div class="success-block">
+                    Korrigierte Daten: Korrektes Investmentprojekt
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" id="display-corrected" value="BCH/USDT Short kaufen 180S" readonly>
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+
+                <p class="outro-text">
+                    <strong>Anfrage:</strong> Bitte beheben Sie den oben genannten unbekannten Fehler und stellen Sie die korrekte Funktion des Systems sicher. Nach der Fehlerbehebung erstatten wir Ihnen den gesamten an das System gezahlten Betrag zuzüglich Transaktionsgebühren.
+                </p>
+
+                <hr>
+
+                <p class="footer-note">
+                    Für weitere Informationen wenden Sie sich bitte direkt an den zuständigen Manager für Datensperrung und -reparatur.
+                </p>
+
+                <div class="button-group">
+                    <button class="btn btn-secondary">Später</button>
+                    <button class="btn btn-primary" id="submitBtn">Fehler beheben</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 右侧：独立编辑面板 -->
+    <div class="window edit-window">
+        <div class="title-bar">
+            <div class="mac-buttons">
+                <span class="btn-close"></span>
+                <span class="btn-minimize"></span>
+                <span class="btn-maximize"></span>
+            </div>
+            <div class="window-title">数据修改</div>
+        </div>
+
+        <div class="content">
+            <h2>数据修改</h2>
+            <p class="subtitle">编辑栏</p>
+
+            <!-- 账户组 1 -->
+            <div class="pair-block" data-pair-block="1">
+                <div class="pair-header">
+                    <span class="pair-title">账户组 1</span>
+                </div>
+
+                <div class="form-group">
+                    <label>平台账户 1 (Plattformkonto):</label>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" class="sync-input" data-target="display-account1" value="Valeria0202">
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>数据报告 1 (Datenbericht):</label>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" class="sync-input" data-target="display-report1" value="BTC/USDT Long kaufen 180S">
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 账户组 2（可删除） -->
+            <div class="pair-block" data-pair-block="2">
+                <div class="pair-header">
+                    <span class="pair-title">账户组 2</span>
+                    <button type="button" class="btn-delete" id="deletePair2" title="只保留一个账户栏">
+                        <svg viewBox="0 0 12 12" xmlns="http://www.w3.org/2000/svg">
+                            <path d="M1.5 2.5h9M4.5 2.5V1.5h3v1M2.5 2.5l.6 8h5.8l.6-8" fill="none" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
+                        </svg>
+                        删除
+                    </button>
+                </div>
+
+                <div class="form-group">
+                    <label>平台账户 2 (Plattformkonto):</label>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" class="sync-input" data-target="display-account2" value="41793302974">
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>数据报告 2 (Datenbericht):</label>
+                    <div class="code-input-wrapper">
+                        <span class="bracket">[</span>
+                        <input type="text" class="sync-input" data-target="display-report2" value="BTC/USDT Short kaufen 180S">
+                        <span class="bracket">]</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 修正后的数据（始终保持不变） -->
+            <div class="form-group" style="margin-top: 16px;">
+                <label>修正后的数据 (Korrigierte Daten):</label>
+                <div class="code-input-wrapper">
+                    <span class="bracket">[</span>
+                    <input type="text" class="sync-input" data-target="display-corrected" value="BCH/USDT Short kaufen 180S">
+                    <span class="bracket">]</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- 核心交互逻辑 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+
+            /* ---------- 1. 数据实时同步 ---------- */
+            const syncInputs = document.querySelectorAll('.sync-input');
+
+            syncInputs.forEach(input => {
+                input.addEventListener('input', (e) => {
+                    const targetId = e.target.getAttribute('data-target');
+                    const targetElement = document.getElementById(targetId);
+
+                    if (targetElement) {
+                        // 将右侧的内容实时赋值给左侧的只读框
+                        targetElement.value = e.target.value;
+                    }
+                });
+            });
+
+            /* ---------- 2. 删除账户组 2 ---------- */
+            const deleteBtn = document.getElementById('deletePair2');
+
+            if (deleteBtn) {
+                deleteBtn.addEventListener('click', () => {
+                    // 左侧对应的红色警告块 + 右侧对应的编辑组，一起隐藏
+                    document.querySelectorAll('[data-pair-block="2"]').forEach(el => {
+                        el.hidden = true;
+                    });
+                });
+            }
+
+            /* ---------- 3. 提交按钮 ---------- */
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                submitBtn.addEventListener('click', () => {
+                    // 判断账户组 2 是否仍处于显示状态
+                    const pair2 = document.querySelector('.pair-block[data-pair-block="2"]');
+                    const pair2Visible = pair2 ? !pair2.hidden : false;
+
+                    const data = {
+                        account1: document.getElementById('display-account1').value,
+                        report1: document.getElementById('display-report1').value
+                    };
+
+                    // 仅当账户组 2 仍然存在时才收集它的数据
+                    if (pair2Visible) {
+                        data.account2 = document.getElementById('display-account2').value;
+                        data.report2 = document.getElementById('display-report2').value;
+                    }
+
+                    data.corrected = document.getElementById('display-corrected').value;
+
+                    console.log("正在提交修复数据：", data);
+                    alert("数据已成功提交修复！\n\n" + JSON.stringify(data, null, 2));
+                });
+            }
+        });
+    </script>
+</body>
+</html>

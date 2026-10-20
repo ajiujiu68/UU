@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>实用工具</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body, html {
+            height: 100%;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            overflow: hidden; /* 防止主页面出现滚动条 */
+        }
+
+        /* 顶部导航栏样式 */
+        .nav-bar {
+            display: flex;
+            background-color: #1e293b;
+            padding: 0 20px;
+            height: 50px;
+            align-items: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            position: relative;
+            z-index: 10;
+        }
+
+        .nav-btn {
+            background: transparent;
+            border: none;
+            color: #94a3b8;
+            padding: 0 24px;
+            height: 100%;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+            position: relative;
+        }
+
+        .nav-btn:hover {
+            color: #e2e8f0;
+            background-color: rgba(255,255,255,0.05);
+        }
+
+        .nav-btn.active {
+            color: #ffffff;
+            background-color: #3b82f6;
+        }
+
+        /* 内容区域容器 */
+        .iframe-container {
+            width: 100%;
+            height: calc(100% - 50px); /* 减去顶部导航栏高度 */
+            position: relative;
+        }
+
+        /* iframe 样式 */
+        .page-frame {
+            width: 100%;
+            height: 100%;
+            border: none;
+            display: none; /* 默认隐藏 */
+            position: absolute;
+            top: 0;
+            left: 0;
+        }
+
+        .page-frame.active {
+            display: block; /* 激活时显示 */
+        }
+    </style>
+</head>
+<body>
+
+    <!-- 顶部导航栏 -->
+    <div class="nav-bar">
+        <button class="nav-btn active" data-target="frame-1">保险</button>
+        <button class="nav-btn" data-target="frame-2">错单</button>
+        <button class="nav-btn" data-target="frame-3">信誉分</button>
+    </div>
+
+    <!-- 页面内容（使用 iframe 隔离 CSS 和 JS） -->
+    <div class="iframe-container">
+        <!-- src 路径需与实际文件名一致 -->
+        <iframe class="page-frame active" id="frame-1" src="baoxian.html"></iframe>
+        <iframe class="page-frame" id="frame-2" src="cuodan.html"></iframe>
+        <iframe class="page-frame" id="frame-3" src="xinyufen.html"></iframe>
+    </div>
+
+    <script>
+        // 获取所有导航按钮和 iframe
+        const navBtns = document.querySelectorAll('.nav-btn');
+        const frames = document.querySelectorAll('.page-frame');
+
+        // 为每个按钮添加点击事件
+        navBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                // 1. 移除所有按钮的 active 类
+                navBtns.forEach(b => b.classList.remove('active'));
+                // 2. 给当前点击的按钮加上 active 类
+                btn.classList.add('active');
+
+                // 3. 隐藏所有 iframe
+                frames.forEach(frame => frame.classList.remove('active'));
+                // 4. 显示目标 iframe
+                const targetId = btn.getAttribute('data-target');
+                document.getElementById(targetId).classList.add('active');
+            });
+        });
+    </script>
+</body>
+</html>

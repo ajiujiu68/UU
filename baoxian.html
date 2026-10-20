@@ -1,0 +1,402 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- 优化：声明浅色配色方案，避免系统深色模式下表单控件反色 -->
+    <meta name="color-scheme" content="light">
+    <meta name="description" content="Versicherungsvertrag - Versicherungsbedingungen für das Plattform-Konto">
+    <title>保险</title>
+    <style>
+        /* ================= 全局样式 ================= */
+        /* 优化：提取 CSS 自定义属性（变量），便于统一维护，渲染效果不变 */
+        :root {
+            --primary-red: #d31111;
+            --focus-blue: #0056b3;
+            --shadow-doc: 0 4px 15px rgba(0, 0, 0, 0.2);
+            --shadow-panel: 0 4px 15px rgba(0, 0, 0, 0.1);
+            --text-dark: #333;
+            --text-mid: #555;
+            --text-light: #888;
+            --border-light: #ccc;
+            --border-mid: #ddd;
+        }
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        /* 优化：全局图片自适应，防止图片撑破容器（不影响现有固定尺寸图片） */
+        img {
+            max-width: 100%;
+            height: auto;
+        }
+        body {
+            background-color: #e0e0e0;
+            font-family: Arial, Helvetica, sans-serif;
+            color: #000;
+            display: flex;
+            justify-content: center;
+            padding: 40px 20px;
+            /* 优化：改善字体渲染清晰度 */
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        /* ================= 整体布局 ================= */
+        .layout-wrapper {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+            max-width: 1400px;
+            width: 100%;
+            justify-content: center;
+        }
+        /* ================= 左侧文档样式 ================= */
+        .document-paper {
+            background-color: #ffffff;
+            width: 800px;
+            min-height: 1050px;
+            padding: 30px 70px;
+            box-shadow: var(--shadow-doc);
+            position: relative;
+            /* 优化：防止用户输入超长代码/金额时溢出文档边界 */
+            overflow-wrap: anywhere;
+            word-break: break-word;
+        }
+        .logo-container {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .logo-img {
+            max-width: 250px;
+            height: auto;
+        }
+        .main-title {
+            color: var(--primary-red);
+            text-align: center;
+            font-size: 22px;
+            font-weight: bold;
+            margin-bottom: 30px;
+            letter-spacing: 1px;
+        }
+        .user-code {
+            text-align: center;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 25px;
+        }
+        .intro-text, .list-content p {
+            font-size: 14px;
+            line-height: 1.5;
+            text-align: justify;
+            margin-bottom: 15px;
+            /* 优化：配合 lang="de" 启用德语自动断字，改善两端对齐文本的大空隙问题 */
+            -webkit-hyphens: auto;
+            hyphens: auto;
+        }
+        .list-content p {
+            margin-bottom: 12px;
+        }
+        .red-warning {
+            color: var(--primary-red);
+            font-size: 14px;
+            line-height: 1.5;
+            margin-top: 30px;
+            margin-bottom: 20px;
+            text-align: justify;
+            -webkit-hyphens: auto;
+            hyphens: auto;
+        }
+        /* ===== 将代码、金额和欧元符号设置为红色 ===== */
+        #display-code, #display-amount, .currency-symbol {
+            color: var(--primary-red);
+            font-weight: bold; /* 优化：与编辑栏输入样式保持视觉一致 */
+        }
+        /* ================= 底部签名与印章 ================= */
+        .footer-area {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-end;
+            margin-top: 10px;
+            /* 优化：避免签名/印章区域被挤压 */
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .signature-box {
+            width: 150px;
+            margin-bottom: 10px;
+        }
+        .signature-img {
+            width: 100%;
+            height: auto;
+        }
+        .stamp-box {
+            text-align: center;
+        }
+        .stamp-img {
+            width: 120px;
+            height: auto;
+            margin-bottom: -10px;
+        }
+        .date-text {
+            font-size: 14px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+        /* ================= 右侧编辑栏 ================= */
+        .editor-panel {
+            background-color: #ffffff;
+            padding: 30px;
+            border-radius: 10px;
+            box-shadow: var(--shadow-panel);
+            width: 300px;
+            position: sticky;
+            top: 40px;
+        }
+        .editor-panel h3 {
+            margin-bottom: 20px;
+            font-size: 18px;
+            color: var(--text-dark);
+            border-bottom: 2px solid var(--border-mid);
+            padding-bottom: 10px;
+            /* 优化：让 SVG 图标与文字垂直居中对齐 */
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .editor-panel h3 svg {
+            flex-shrink: 0;
+        }
+        .input-group {
+            margin-bottom: 20px;
+        }
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            font-weight: bold;
+            margin-bottom: 8px;
+            color: var(--text-mid);
+        }
+        .input-group input {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border-light);
+            border-radius: 5px;
+            font-size: 16px;
+            font-family: inherit;
+            transition: border-color 0.3s, box-shadow 0.3s; /* 优化：过渡更平滑 */
+            background-color: #fff;
+        }
+        #input-code, #input-amount {
+            color: var(--primary-red);
+            font-weight: bold;
+        }
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--focus-blue);
+            box-shadow: 0 0 5px rgba(0, 86, 179, 0.2);
+        }
+        /* 优化：键盘 Tab 聚焦时提供更明显的可见焦点环，增强可访问性 */
+        .input-group input:focus-visible {
+            outline: 2px solid var(--focus-blue);
+            outline-offset: 1px;
+        }
+        .editor-tip {
+            font-size: 12px;
+            color: var(--text-light);
+            margin-top: 20px;
+            text-align: center;
+        }
+        /* ================= 优化：响应式布局（窄屏时编辑栏移至文档下方，桌面端完全不变） ================= */
+        @media (max-width: 1180px) {
+            .layout-wrapper {
+                flex-direction: column;
+                align-items: center;
+            }
+            .document-paper {
+                width: 100%;
+                max-width: 800px;
+            }
+            .editor-panel {
+                width: 100%;
+                max-width: 800px;
+                position: static; /* 取消吸顶，避免遮挡 */
+                order: -1; /* 编辑栏置于文档上方，方便移动端先编辑后预览 */
+            }
+        }
+        @media (max-width: 600px) {
+            body {
+                padding: 20px 10px;
+            }
+            .document-paper {
+                padding: 25px 30px;
+                min-height: auto; /* 移动端取消固定纸张高度 */
+            }
+            .main-title {
+                font-size: 18px;
+            }
+            .footer-area {
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+        }
+        /* ================= 优化：打印样式（合同文档打印时隐藏编辑栏，适配 A4 纸张） ================= */
+        @media print {
+            body {
+                background: #fff;
+                padding: 0;
+                display: block;
+            }
+            .layout-wrapper {
+                display: block;
+                max-width: none;
+            }
+            .editor-panel {
+                display: none !important; /* 打印时隐藏编辑栏 */
+            }
+            .document-paper {
+                width: 100%;
+                min-height: auto;
+                box-shadow: none;
+                padding: 0;
+                margin: 0;
+            }
+            /* 打印时保留红色文字等精确颜色 */
+            * {
+                -webkit-print-color-adjust: exact;
+                print-color-adjust: exact;
+            }
+            @page {
+                margin: 15mm;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout-wrapper">
+        <!-- 左侧文档区域 -->
+        <div class="document-paper">
+            <!-- 顶部 Logo：修正了路径，去掉了 ../ -->
+            <div class="logo-container">
+                <img src="images/logo.png" alt="Kennet Logo" class="logo-img" decoding="async">
+            </div>
+            <!-- 红色大标题 -->
+            <h1 class="main-title">VERSICHERUNGSBEDINGUNGEN</h1>
+            <!-- 客户代码 -->
+            <p class="user-code">Benutzerhandelscode: <span id="display-code">HB663827</span></p>
+            <p class="intro-text">
+                Wir stellen Ihnen hiermit den Versicherungsvertrag für Ihr Plattform-Konto bereit. Bitte lesen Sie diesen Vertrag aufmerksam durch und achten Sie sorgfältig auf sämtliche Details.
+            </p>
+            <!-- 列表内容 -->
+            <div class="list-content">
+                <p>1. Investitionsplan<br>
+                Auf Basis eines verfügbaren Kapitals von <span id="display-amount">189</span><span class="currency-symbol"> €</span> ist ein Investitionsplan für das Mitarbeiterkonto zu erstellen, der auf ein angemessenes Gewinnziel ausgerichtet ist.</p>
+                <p>2. Einhaltung von Anweisungen<br>
+                Die Mitarbeiter sind verpflichtet, den Anweisungen der Investmentleitung strikt Folge zu leisten. Eigenmächtige Investitionen oder unautorisierte Auszahlungen sind strengstens untersagt. Jeder Verstoß gegen diese Bestimmungen führt zur sofortigen Stornierung des Auftrags sowie zur Sperrung der Auszahlung. In einem solchen Fall übernimmt der Mitarbeiter die alleinige Haftung für entstandene Schäden.</p>
+                <p>3. Auftragsgewinne und Rückerstattung<br>
+                Gemäß den Plattformrichtlinien muss der Gewinn pro Auftrag mindestens 30 % des Basis-Investments betragen. Die Aufträge werden zufällig in ein bis drei Tranchen unterteilt, wobei die letzte Tranche als [Rückerstattungsauftrag] gewertet wird. Diese Richtlinie ist ausschließlich am Tag der Erstellung gültig und orientiert sich an den jeweils aktuellen Bedingungen.</p>
+                <p>4. Doppelte Entschädigung bei Verlusten<br>
+                Sofern der Nutzer die Aufträge gemäß den Plattformrichtlinien ordnungsgemäß ausführt, der Händler jedoch keine fristgerechte Zahlung leistet, aktiviert die Plattform einen Mechanismus zur doppelten Entschädigung, um die Interessen der Nutzer zu wahren. Dieser Entschädigungsprozess unterliegt der Aufsicht und Prüfung durch das Bundesministerium der Finanzen. Die Entschädigungsregelung greift ebenfalls, sofern finanzielle Verluste oder entgangene Gewinne nachweislich durch das Verschulden des Händlers verursacht wurden.</p>
+                <p>5. Ausschluss der Auszahlung bei Regelverstoßen<br>
+                Sollte ein Mitarbeiter die zugewiesenen Aufgaben aus persönlichen Gründen nicht gemäß den Handelsrichtlinien der Plattform ausführen, ist die Plattform berechtigt, die Bereitstellung des Auszahlungscodes zu verweigern. In diesem Fall verfällt der Anspruch des Mitarbeiters auf jegliche Auszahlungen.</p>
+            </div>
+            <!-- 红色警告文本 -->
+            <p class="red-warning">
+                Die abschließende Deutung dieses Vertrags obliegt allein unserem Unternehmen, welches sich zudem vorbehält, die Bestimmungen je nach Bedarf anzupassen und neu zu interpretieren.
+            </p>
+            <!-- 底部签名与印章区域 -->
+            <div class="footer-area">
+                <div class="signature-box">
+                    <!-- 签名：修正了路径 -->
+                    <img src="images/signature.png" alt="Signature" class="signature-img" decoding="async">
+                </div>
+                <div class="stamp-box">
+                    <!-- 印章：修正了路径 -->
+                    <img src="images/stamp.png" alt="Stamp" class="stamp-img" decoding="async">
+                    <!-- 日期 -->
+                    <p class="date-text">Datum: <span id="display-date">加载中...</span></p>
+                </div>
+            </div>
+        </div>
+        <!-- 右侧独立编辑栏 -->
+        <div class="editor-panel">
+            <!-- 优化：用内联 SVG 齿轮图标替代 emoji ⚙️，避免跨平台/跨设备 emoji 渲染不一致 -->
+            <h3>
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <circle cx="12" cy="12" r="3"></circle>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+                </svg>
+                编辑栏
+            </h3>
+            
+            <div class="input-group">
+                <label for="input-code">编辑 Code:</label>
+                <!-- 优化：关闭自动填充/拼写检查，自动大写提示，提升输入体验 -->
+                <input type="text" id="input-code" value="HB663827" autocomplete="off" spellcheck="false" autocapitalize="characters">
+            </div>
+            <div class="input-group">
+                <label for="input-amount">编辑金额 (€):</label>
+                <!-- 优化：移动端唤起数字键盘 -->
+                <input type="text" id="input-amount" value="189" inputmode="decimal" autocomplete="off" spellcheck="false">
+            </div>
+            <div class="input-group">
+                <label for="input-date">编辑时间 (日历):</label>
+                <input type="date" id="input-date" autocomplete="off">
+            </div>
+            
+            <p class="editor-tip">修改上方内容，左侧文档将实时同步更新。</p>
+            <!-- 优化：JS 禁用时的提示 -->
+            <noscript>
+                <p class="editor-tip" style="color: var(--primary-red);">请启用 JavaScript 以使用实时编辑与日期功能。</p>
+            </noscript>
+        </div>
+    </div>
+    <!-- JavaScript 交互逻辑 -->
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const inputCode = document.getElementById('input-code');
+            const displayCode = document.getElementById('display-code');
+            const inputAmount = document.getElementById('input-amount');
+            const displayAmount = document.getElementById('display-amount');
+            const inputDate = document.getElementById('input-date');
+            const displayDate = document.getElementById('display-date');
+
+            // 优化：统一的日期格式化工具（输出格式 dd.mm.yyyy，与原版一致）
+            function formatDateDE(dateStr) {
+                if (!dateStr) return '';
+                const parts = dateStr.split('-');
+                if (parts.length !== 3) return dateStr;
+                return `${parts[2]}.${parts[1]}.${parts[0]}`;
+            }
+
+            // --- 初始化日期 (自动检测今天) ---
+            function setTodayDate() {
+                const today = new Date();
+                const yyyy = today.getFullYear();
+                // 优化：使用 padStart 简化补零逻辑，结果与原版完全一致
+                const mm = String(today.getMonth() + 1).padStart(2, '0');
+                const dd = String(today.getDate()).padStart(2, '0');
+                inputDate.value = `${yyyy}-${mm}-${dd}`;
+                displayDate.textContent = `${dd}.${mm}.${yyyy}`;
+            }
+            setTodayDate();
+
+            // --- 监听数据变化（使用 textContent 赋值，天然防 XSS，保持原版行为） ---
+            inputCode.addEventListener('input', function(e) {
+                displayCode.textContent = e.target.value;
+            });
+            inputAmount.addEventListener('input', function(e) {
+                displayAmount.textContent = e.target.value;
+            });
+            // 优化：同时绑定 input 和 change 事件，兼容部分浏览器日期控件仅触发 change 的情况
+            function handleDateChange(e) {
+                const selectedDate = e.target.value;
+                displayDate.textContent = formatDateDE(selectedDate);
+            }
+            inputDate.addEventListener('input', handleDateChange);
+            inputDate.addEventListener('change', handleDateChange);
+        });
+    </script>
+</body>
+</html>
