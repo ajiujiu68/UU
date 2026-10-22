@@ -270,6 +270,15 @@
     {id:'26807085658mRs', account:'david_hoffmann', amount:420.00, status:'success', reason:'', release:'manual', apply:'2026-07-31T15:30:00', update:'2026-07-31T16:12:45'}
   ];
 
+  // ===== 自动将标记处的日期（年月日）更新为当日，保留原来的时分秒 =====
+  var now = new Date();
+  var todayDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
+  rows.forEach(function(r) {
+    if(r.apply) r.apply = todayDate + r.apply.substring(10);
+    if(r.update) r.update = todayDate + r.update.substring(10);
+  });
+  // ===================================================================
+
   /* ===== FIX:用订单号(唯一ID)追踪选中项，排序/分页后永不丢失 ===== */
   var selectedId = rows[2].id;  /* 默认选中第3个订单 anna_schmidt，方便测试 */
   var sortKey = 'id', sortDir = 1;  /* 默认按订单号升序，位置稳定，修改时间不跳动 */
