@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>分笔</title>
+    <style>
+        /* ============ 基础重置 ============ */
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background: #e8e8e8;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            flex-wrap: wrap;
+            gap: 24px;
+            min-height: 100vh;
+            padding: 40px 24px;
+            color: #333;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+
+        /* ============ 通用窗口外壳 ============ */
+        .shell {
+            background: #f5f5f5;
+            border-radius: 10px;
+            box-shadow:
+                0 10px 30px rgba(0, 0, 0, 0.2),
+                0 1px 0 rgba(255, 255, 255, 0.7) inset;
+            overflow: hidden;
+            border: 1px solid #d1d1d1;
+        }
+
+        /* ============ 顶部标题栏（通用） ============ */
+        .title-bar {
+            position: relative;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 14px;
+            background: linear-gradient(180deg, #f2f2f2 0%, #e6e6e6 100%);
+            border-bottom: 1px solid #d1d1d1;
+        }
+        .mac-buttons {
+            display: flex;
+            gap: 8px;
+        }
+        .mac-btn {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        .btn-close { background-color: #ff5f56; border: 1px solid #e0443e; }
+        .btn-min   { background-color: #ffbd2e; border: 1px solid #dea123; }
+        .btn-max   { background-color: #27c93f; border: 1px solid #1aab29; }
+        .window-title {
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 13px;
+            color: #4a4a4a;
+            font-weight: 500;
+            white-space: nowrap;
+        }
+        .title-right {
+            margin-left: auto;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 11px;
+            color: #9a9a9a;
+            letter-spacing: 0.03em;
+        }
+
+        /* ================================================= */
+        /* ============ 左格：系统警告窗口 ============ */
+        /* ================================================= */
+        .system-window {
+            width: 900px;
+            max-width: 100%;
+            flex: 0 1 900px;
+        }
+
+        /* 状态副栏 */
+        .subbar {
+            display: flex;
+            align-items: center;
+            gap: 18px;
+            flex-wrap: wrap;
+            padding: 8px 16px;
+            background: #fbfbfb;
+            border-bottom: 1px solid #e2e2e2;
+            font-size: 12px;
+            color: #6b6b6b;
+        }
+        .badge-danger {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: #fdecea;
+            color: #b3261e;
+            border: 1px solid #f3c2bd;
+            padding: 2px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 600;
+            letter-spacing: 0.02em;
+        }
+        .badge-danger::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: #d93025;
+            box-shadow: 0 0 0 2px rgba(217, 48, 37, 0.18);
+        }
+        .subbar .meta {
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 11.5px;
+            color: #7c7c7c;
+        }
+        .subbar .meta strong {
+            color: #333;
+            font-weight: 600;
+        }
+
+        /* 主体内容区 */
+        .content {
+            display: flex;
+            align-items: stretch;
+            background: #fafafa;
+        }
+
+        /* 左侧图标区 */
+        .sidebar {
+            width: 180px;
+            flex-shrink: 0;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+            padding-top: 46px;
+            background: linear-gradient(180deg, #f4f4f4 0%, #eeeeee 100%);
+            border-right: 1px solid #e6e6e6;
+        }
+        .checkerboard {
+            width: 150px;
+            height: 150px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: radial-gradient(ellipse at 50% 62%, rgba(0, 0, 0, 0.07) 0%, transparent 65%);
+        }
+
+        /* === 系统风格锁图标（放大版） === */
+        .lock-wrapper {
+            position: relative;
+            width: 92px;
+            height: 70px;
+            margin-top: 46px;
+            filter:
+                drop-shadow(0 4px 5px rgba(0, 0, 0, 0.18))
+                drop-shadow(0 12px 18px rgba(0, 0, 0, 0.12));
+        }
+        .lock-shackle {
+            position: absolute;
+            top: -46px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50px;
+            height: 54px;
+            border: 11px solid #7d8288;
+            border-bottom: none;
+            border-radius: 26px 26px 0 0;
+            box-shadow:
+                inset 3px 2.5px 2.5px rgba(255, 255, 255, 0.75),
+                inset -2.5px -2.5px 3.5px rgba(0, 0, 0, 0.28);
+            z-index: 1;
+        }
+        .lock-body {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(180deg, #c4c8cd 0%, #92979e 50%, #70757d 100%);
+            border-radius: 14px;
+            z-index: 2;
+            box-shadow:
+                inset 0 3px 3px rgba(255, 255, 255, 0.85),
+                inset 0 -4px 7px rgba(0, 0, 0, 0.28),
+                inset -3px 0 6px rgba(0, 0, 0, 0.12),
+                inset 3px 0 6px rgba(255, 255, 255, 0.35);
+            border: 1px solid #5c6168;
+        }
+        .lock-keyhole {
+            position: absolute;
+            top: 42%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 13px;
+            height: 13px;
+            background-color: #26292d;
+            border-radius: 50%;
+            box-shadow:
+                inset 1.5px 2.5px 4px rgba(0, 0, 0, 0.9),
+                0 1px 1px rgba(255, 255, 255, 0.3);
+        }
+        .lock-keyhole::after {
+            content: '';
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 7px;
+            height: 11px;
+            background-color: #26292d;
+            border-radius: 1px 1px 3px 3px;
+            box-shadow: inset 1px 2px 3px rgba(0, 0, 0, 0.9);
+        }
+
+        /* 中间主内容 */
+        .main-content {
+            flex: 1;
+            min-width: 0;
+            padding: 28px 28px 24px;
+            background: #fafafa;
+        }
+        h1 {
+            font-size: 23px;
+            font-weight: 600;
+            letter-spacing: -0.2px;
+            color: #1f1f1f;
+            margin-bottom: 16px;
+        }
+
+        /* 红色警告框 */
+        .alert-box {
+            display: flex;
+            align-items: flex-start;
+            gap: 10px;
+            background: #fff8f7;
+            border: 1px solid #f0d0cd;
+            border-left: 4px solid #c74642;
+            padding: 13px 16px;
+            border-radius: 5px;
+            font-size: 14px;
+            line-height: 1.55;
+            color: #c0392b;
+            font-weight: 500;
+            margin-bottom: 24px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+        }
+        .alert-box .warn-emoji {
+            flex-shrink: 0;
+            font-size: 15px;
+            line-height: 1.4;
+        }
+
+        /* 区块标题 */
+        .report-section {
+            margin-bottom: 24px;
+        }
+        .section-title {
+            font-size: 12px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #b33a36;
+            margin-bottom: 10px;
+            padding-left: 10px;
+            border-left: 3px solid #b33a36;
+            line-height: 1.1;
+        }
+
+        /* 表格 */
+        .table-wrap {
+            border: 1px solid #e3e3e3;
+            border-radius: 6px;
+            overflow: hidden;
+            background: #ffffff;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.03);
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+        }
+        th, td {
+            padding: 11px 12px;
+            text-align: left;
+            border-bottom: 1px solid #eeeeee;
+            vertical-align: middle;
+        }
+        tbody tr:last-child td {
+            border-bottom: none;
+        }
+        tbody tr:hover {
+            background: #fcfcfc;
+        }
+        .col-action      { width: 35%; color: #3a3a3a; }
+        .col-amount      {
+            width: 25%;
+            text-align: right;
+            padding-right: 20px;
+            font-variant-numeric: tabular-nums;
+            font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+            font-size: 13px;
+            color: #1f1f1f;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        .col-status-icon { width: 5%; text-align: center; }
+        .col-status-text { width: 35%; color: #4a4a4a; }
+
+        /* 状态图标 */
+        .status-icon {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+            font-weight: bold;
+            font-size: 11px;
+            line-height: 1;
+        }
+        .icon-success {
+            background-color: #34c759;
+            color: #ffffff;
+        }
+        .icon-error {
+            color: #ff3b30;
+            font-size: 17px;
+            background: none;
+        }
+
+        /* 说明文字 */
+        .instructions {
+            font-size: 13.5px;
+            line-height: 1.65;
+            margin-bottom: 20px;
+            color: #333;
+        }
+        .instructions strong {
+            color: #555;
+        }
+        .footer-note {
+            font-size: 12.5px;
+            color: #777;
+            font-style: italic;
+            line-height: 1.55;
+            margin-bottom: 26px;
+            padding-top: 14px;
+            border-top: 1px solid #e4e4e4;
+        }
+
+        /* 按钮组 */
+        .action-buttons {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+        }
+        button {
+            padding: 10px 20px;
+            border-radius: 5px;
+            font-size: 14px;
+            font-family: inherit;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-weight: 500;
+            transition: background-color 0.15s, border-color 0.15s, box-shadow 0.15s;
+        }
+        .btn-secondary {
+            background-color: #ffffff;
+            border-color: #d1d1d1;
+            color: #333;
+            box-shadow: 0 1px 1px rgba(0, 0, 0, 0.03);
+        }
+        .btn-secondary:hover {
+            background-color: #f0f0f0;
+        }
+        .btn-primary {
+            background-color: #c74642;
+            color: #ffffff;
+            box-shadow: 0 1px 2px rgba(183, 58, 54, 0.35);
+        }
+        .btn-primary:hover {
+            background-color: #b33a36;
+        }
+
+        /* ================================================= */
+        /* ============ 右格：独立编辑面板 ============ */
+        /* ================================================= */
+        .editor-panel {
+            width: 320px;
+            flex: 0 0 320px;
+            display: flex;
+            flex-direction: column;
+        }
+        .editor-panel .title-bar {
+            position: relative;
+        }
+        .editor-panel .window-title {
+            font-size: 12.5px;
+        }
+
+        /* 编辑面板内容 */
+        .editor-body {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+            padding: 20px 20px 22px;
+            background: #fafafa;
+        }
+
+        .panel-group-title {
+            font-size: 11.5px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.09em;
+            color: #6b6b6b;
+            padding-bottom: 8px;
+            border-bottom: 1px solid #e6e6e6;
+            margin-bottom: 2px;
+        }
+        .panel-group-title:not(:first-child) {
+            margin-top: 6px;
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .field label {
+            font-size: 12px;
+            color: #666;
+            font-weight: 500;
+        }
+        .input-wrap {
+            position: relative;
+            display: flex;
+            align-items: center;
+        }
+        .input-wrap input {
+            width: 100%;
+            padding: 8px 34px 8px 10px;
+            border: 1px solid #d5d5d5;
+            border-radius: 4px;
+            background: #ffffff;
+            font-family: inherit;
+            font-size: 13.5px;
+            font-variant-numeric: tabular-nums;
+            color: #222;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+        .input-wrap input.no-unit {
+            padding-right: 10px;
+        }
+        .input-wrap input:focus {
+            border-color: #c74642;
+            box-shadow: 0 0 0 3px rgba(199, 70, 66, 0.12);
+        }
+        .input-wrap .unit {
+            position: absolute;
+            right: 10px;
+            font-size: 12px;
+            color: #9a9a9a;
+            pointer-events: none;
+        }
+        .panel-hint {
+            font-size: 11.5px;
+            line-height: 1.55;
+            color: #8a8a8a;
+            margin-top: 2px;
+        }
+        .panel-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 10px;
+            padding-top: 14px;
+            border-top: 1px solid #e6e6e6;
+        }
+        .panel-actions button {
+            padding: 8px 12px;
+            font-size: 13px;
+        }
+        .btn-apply {
+            flex: 1;
+            background-color: #c74642;
+            color: #ffffff;
+        }
+        .btn-apply:hover {
+            background-color: #b33a36;
+        }
+        .btn-reset {
+            background-color: #ffffff;
+            border-color: #d1d1d1;
+            color: #444;
+        }
+        .btn-reset:hover {
+            background-color: #ececec;
+        }
+        .saved-hint {
+            font-size: 11.5px;
+            color: #2e7d32;
+            font-weight: 600;
+            opacity: 0;
+            transform: translateY(-2px);
+            transition: opacity 0.2s, transform 0.2s;
+            min-height: 16px;
+        }
+        .saved-hint.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        /* 响应式：窄屏时上下堆叠 */
+        @media (max-width: 1280px) {
+            body {
+                justify-content: center;
+            }
+            .system-window {
+                flex: 1 1 900px;
+            }
+            .editor-panel {
+                flex: 1 1 900px;
+                width: 900px;
+                max-width: 100%;
+            }
+        }
+        @media (max-width: 720px) {
+            .content {
+                flex-direction: column;
+            }
+            .sidebar {
+                width: 100%;
+                padding: 20px 0;
+                border-right: none;
+                border-bottom: 1px solid #e6e6e6;
+            }
+            .checkerboard {
+                height: 130px;
+            }
+            .lock-wrapper {
+                margin-top: 40px;
+                transform: scale(0.85);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ============================================================ -->
+    <!-- ============ 左格：系统警告窗口（与编辑栏完全分离） ============ -->
+    <!-- ============================================================ -->
+    <div class="system-window shell">
+        <!-- 顶部标题栏 -->
+        <div class="title-bar">
+            <div class="mac-buttons">
+                <span class="mac-btn btn-close"></span>
+                <span class="mac-btn btn-min"></span>
+                <span class="mac-btn btn-max"></span>
+            </div>
+            <div class="window-title">Systemwarnung – Handelssystemverwaltung</div>
+            <div class="title-right">SYS · v4.2.1</div>
+        </div>
+
+        <!-- 状态副栏：日期与单号由脚本动态填充 -->
+        <div class="subbar">
+            <span class="badge-danger">Konto gesperrt</span>
+            <span class="meta">Vorgang: <strong id="vorgangId">SYS-2024-8841</strong></span>
+            <span class="meta">Konto: <strong id="accountDisplay">DE••••••4417</strong></span>
+            <span class="meta">Letzte Prüfung: <strong id="lastCheckDate">—</strong></span>
+        </div>
+
+        <!-- 主体内容 -->
+        <div class="content">
+            <!-- 左侧锁图标 -->
+            <div class="sidebar">
+                <div class="checkerboard">
+                    <div class="lock-wrapper">
+                        <div class="lock-shackle"></div>
+                        <div class="lock-body">
+                            <div class="lock-keyhole"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 中间主内容 -->
+            <div class="main-content">
+                <h1>Handelssystemverwaltung</h1>
+
+                <div class="alert-box">
+                    <span class="warn-emoji">⚠️</span>
+                    <span>Achtung! Aufgrund eines Fehlers im Auszahlungsprozess wurde Ihr Konto vom System als Hochrisikokonto eingestuft.</span>
+                </div>
+
+                <div class="report-section">
+                    <div class="section-title">Systembericht anfordern</div>
+
+                    <div class="table-wrap">
+                        <table>
+                            <tbody>
+                                <tr>
+                                    <td class="col-action">Testauszahlungsbetrag:</td>
+                                    <td class="col-amount" id="cell-test">50,00 €</td>
+                                    <td class="col-status-icon"><span class="status-icon icon-success">✔</span></td>
+                                    <td class="col-status-text">Vom System freigegeben</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-action">Erste Auszahlung:</td>
+                                    <td class="col-amount" id="cell-first">50,00 €</td>
+                                    <td class="col-status-icon"><span class="status-icon icon-error">✖</span></td>
+                                    <td class="col-status-text">Vom System abgelehnt</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-action">Zweite Auszahlung:</td>
+                                    <td class="col-amount" id="cell-second">1.000,00 €</td>
+                                    <td class="col-status-icon"><span class="status-icon icon-error">✖</span></td>
+                                    <td class="col-status-text">Keine abgehobenen Mittel festgestellt</td>
+                                </tr>
+                                <tr>
+                                    <td class="col-action">Dritte Auszahlung:</td>
+                                    <td class="col-amount" id="cell-third">Gesamtes Kontoguthaben</td>
+                                    <td class="col-status-icon"><span class="status-icon icon-error">✖</span></td>
+                                    <td class="col-status-text">Keine abgehobenen Mittel festgestellt</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="instructions">
+                    <strong>Anfrage:</strong> Bitte beheben Sie den oben genannten unbekannten Fehler und stellen Sie die ordnungsgemäße Funktion des Systems sicher. Nach der Fehlerbehebung erstatten wir Ihnen den gesamten an das System gezahlten Betrag zuzüglich der Transaktionsgebühren.
+                </div>
+
+                <div class="footer-note">
+                    Für weitere Informationen wenden Sie sich bitte direkt an den zuständigen Manager für Kontosperrung und -reparatur.
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn-secondary" type="button">Später</button>
+                    <button class="btn-primary" type="button">Fehler beheben</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ============================================================ -->
+    <!-- ============ 右格：独立编辑面板（完全独立卡片，中文） ============ -->
+    <!-- ============================================================ -->
+    <aside class="editor-panel shell">
+        <!-- 编辑面板自己的标题栏 -->
+        <div class="title-bar">
+            <div class="mac-buttons">
+                <span class="mac-btn btn-close"></span>
+                <span class="mac-btn btn-min"></span>
+                <span class="mac-btn btn-max"></span>
+            </div>
+            <div class="window-title">账户与金额管理</div>
+        </div>
+
+        <div class="editor-body">
+            <!-- 账号组 -->
+            <div class="panel-group-title">账户信息</div>
+            <div class="field">
+                <label for="input-account">账号</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-account" class="no-unit" value="DE••••••4417" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+
+            <!-- 金额组 -->
+            <div class="panel-group-title">金额</div>
+
+            <div class="field">
+                <label for="input-test">测试提现金额</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-test" value="50,00" autocomplete="off">
+                    <span class="unit">€</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="input-first">第一次提现金额</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-first" value="50,00" autocomplete="off">
+                    <span class="unit">€</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="input-second">第二次提现金额</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-second" value="1.000,00" autocomplete="off">
+                    <span class="unit">€</span>
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="input-third">第三次提现金额</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-third" class="no-unit" value="Gesamtes Kontoguthaben" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="panel-hint">
+                修改后点击“应用”，系统报告中的金额将同步更新。
+            </div>
+
+            <div class="saved-hint" id="savedHint">✓ 修改已应用</div>
+
+            <div class="panel-actions">
+                <button class="btn-reset" type="button" id="resetBtn">重置</button>
+                <button class="btn-apply" type="button" id="applyBtn">应用</button>
+            </div>
+        </div>
+    </aside>
+
+    <script>
+        (function () {
+            /* ============================================================
+               1. 动态日期：将 "Letzte Prüfung" 自动设置为今日日期
+               格式：TT.MM.JJJJ（德语常用格式）
+               ============================================================ */
+            const now = new Date();
+            const dd = String(now.getDate()).padStart(2, '0');
+            const mm = String(now.getMonth() + 1).padStart(2, '0');
+            const yyyy = now.getFullYear();
+
+            // 填充"Letzte Prüfung"日期
+            document.getElementById('lastCheckDate').textContent = dd + '.' + mm + '.' + yyyy;
+
+            // 同时把 Vorgang 编号中的年份更新为当前年份（如不需要可删除此行）
+            document.getElementById('vorgangId').textContent = 'SYS-' + yyyy + '-8841';
+
+            /* ---------- 默认值 ---------- */
+            const defaults = {
+                account: 'DE••••••4417',
+                test:    '50,00 €',
+                first:   '50,00 €',
+                second:  '1.000,00 €',
+                third:   'Gesamtes Kontoguthaben'
+            };
+
+            /* ---------- 输入框引用 ---------- */
+            const inputs = {
+                account: document.getElementById('input-account'),
+                test:    document.getElementById('input-test'),
+                first:   document.getElementById('input-first'),
+                second:  document.getElementById('input-second'),
+                third:   document.getElementById('input-third')
+            };
+
+            /* ---------- 系统窗口中对应的显示节点 ---------- */
+            const accountDisplay = document.getElementById('accountDisplay');
+
+            const cells = {
+                test:   document.getElementById('cell-test'),
+                first:  document.getElementById('cell-first'),
+                second: document.getElementById('cell-second'),
+                third:  document.getElementById('cell-third')
+            };
+
+            const savedHint = document.getElementById('savedHint');
+
+            /* ---------- 工具：解析德语金额 ---------- */
+            function parseAmount(str) {
+                const cleaned = String(str).replace(/[^\d.,]/g, '');
+                if (!cleaned) return null;
+
+                let s = cleaned;
+                if (s.includes(',') && s.includes('.')) {
+                    s = s.replace(/\./g, '').replace(',', '.');
+                } else if (s.includes(',')) {
+                    s = s.replace(',', '.');
+                }
+
+                const n = parseFloat(s);
+                return Number.isFinite(n) ? n : null;
+            }
+
+            /* ---------- 工具：格式化为德语金额 ---------- */
+            function formatEuro(n) {
+                return n.toLocaleString('de-DE', {
+                    minimumFractionDigits: 2,
+                    maximumFractionDigits: 2
+                }) + ' €';
+            }
+
+            /* ---------- 同步单个金额 ---------- */
+            function renderAmount(key) {
+                const raw = inputs[key].value.trim();
+                const num = parseAmount(raw);
+
+                if (key === 'third') {
+                    cells.third.textContent = raw || defaults.third;
+                } else {
+                    cells[key].textContent = (num !== null)
+                        ? formatEuro(num)
+                        : (raw || defaults[key]);
+                }
+            }
+
+            /* ---------- 同步账号 ---------- */
+            function renderAccount() {
+                const raw = inputs.account.value.trim();
+                accountDisplay.textContent = raw || '—';
+            }
+
+            /* ---------- 提示闪现 ---------- */
+            let hintTimer = null;
+            function flashHint() {
+                savedHint.classList.add('show');
+                clearTimeout(hintTimer);
+                hintTimer = setTimeout(function () {
+                    savedHint.classList.remove('show');
+                }, 2000);
+            }
+
+            /* ---------- 应用 ---------- */
+            document.getElementById('applyBtn').addEventListener('click', function () {
+                renderAccount();
+                renderAmount('test');
+                renderAmount('first');
+                renderAmount('second');
+                renderAmount('third');
+                flashHint();
+            });
+
+            /* ---------- 重置 ---------- */
+            document.getElementById('resetBtn').addEventListener('click', function () {
+                inputs.account.value = 'DE••••••4417';
+                inputs.test.value    = '50,00';
+                inputs.first.value   = '50,00';
+                inputs.second.value  = '1.000,00';
+                inputs.third.value   = 'Gesamtes Kontoguthaben';
+
+                accountDisplay.textContent = defaults.account;
+                cells.test.textContent     = defaults.test;
+                cells.first.textContent    = defaults.first;
+                cells.second.textContent   = defaults.second;
+                cells.third.textContent    = defaults.third;
+
+                flashHint();
+            });
+        })();
+    </script>
+</body>
+</html>
