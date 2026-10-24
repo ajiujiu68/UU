@@ -316,26 +316,25 @@
         .col-status-icon { width: 5%; text-align: center; }
         .col-status-text { width: 35%; color: #4a4a4a; }
 
-        /* 状态图标 */
+        /* ================================================= */
+        /* 状态图标 (已修改为SVG匹配图片样式)                */
+        /* ================================================= */
         .status-icon {
             display: inline-flex;
             justify-content: center;
             align-items: center;
-            width: 16px;
-            height: 16px;
-            border-radius: 3px;
-            font-weight: bold;
-            font-size: 11px;
-            line-height: 1;
+            width: 22px;
+            height: 22px;
+        }
+        .status-icon svg {
+            width: 100%;
+            height: 100%;
         }
         .icon-success {
-            background-color: #34c759;
-            color: #ffffff;
+            color: #34c759;
         }
         .icon-error {
             color: #ff3b30;
-            font-size: 17px;
-            background: none;
         }
 
         /* 说明文字 */
@@ -611,25 +610,56 @@
                                 <tr>
                                     <td class="col-action">Testauszahlungsbetrag:</td>
                                     <td class="col-amount" id="cell-test">50,00 €</td>
-                                    <td class="col-status-icon"><span class="status-icon icon-success">✔</span></td>
+                                    <td class="col-status-icon">
+                                        <span class="status-icon icon-success">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <polyline points="8 12 11 15 16 9"></polyline>
+                                            </svg>
+                                        </span>
+                                    </td>
                                     <td class="col-status-text">Vom System freigegeben</td>
                                 </tr>
                                 <tr>
                                     <td class="col-action">Erste Auszahlung:</td>
                                     <td class="col-amount" id="cell-first">50,00 €</td>
-                                    <td class="col-status-icon"><span class="status-icon icon-error">✖</span></td>
+                                    <td class="col-status-icon">
+                                        <span class="status-icon icon-error">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                                            </svg>
+                                        </span>
+                                    </td>
                                     <td class="col-status-text">Vom System abgelehnt</td>
                                 </tr>
                                 <tr>
                                     <td class="col-action">Zweite Auszahlung:</td>
                                     <td class="col-amount" id="cell-second">1.000,00 €</td>
-                                    <td class="col-status-icon"><span class="status-icon icon-error">✖</span></td>
+                                    <td class="col-status-icon">
+                                        <span class="status-icon icon-error">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                                            </svg>
+                                        </span>
+                                    </td>
                                     <td class="col-status-text">Keine abgehobenen Mittel festgestellt</td>
                                 </tr>
                                 <tr>
                                     <td class="col-action">Dritte Auszahlung:</td>
                                     <td class="col-amount" id="cell-third">Gesamtes Kontoguthaben</td>
-                                    <td class="col-status-icon"><span class="status-icon icon-error">✖</span></td>
+                                    <td class="col-status-icon">
+                                        <span class="status-icon icon-error">
+                                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                                                <circle cx="12" cy="12" r="10"></circle>
+                                                <line x1="15" y1="9" x2="9" y2="15"></line>
+                                                <line x1="9" y1="9" x2="15" y2="15"></line>
+                                            </svg>
+                                        </span>
+                                    </td>
                                     <td class="col-status-text">Keine abgehobenen Mittel festgestellt</td>
                                 </tr>
                             </tbody>
