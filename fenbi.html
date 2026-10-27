@@ -317,7 +317,7 @@
         .col-status-text { width: 35%; color: #4a4a4a; }
 
         /* ================================================= */
-        /* 状态图标 (已修改为SVG匹配图片样式)                */
+        /* 状态图标 (SVG)                                    */
         /* ================================================= */
         .status-icon {
             display: inline-flex;
@@ -440,6 +440,40 @@
             color: #666;
             font-weight: 500;
         }
+
+        /* 标签 + 删除按钮 一行（仅测试提现使用） */
+        .field-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 8px;
+        }
+
+        /* 删除 / 恢复 小按钮 */
+        .btn-remove {
+            padding: 1px 8px;
+            font-size: 11.5px;
+            font-weight: 600;
+            line-height: 1.6;
+            border-radius: 3px;
+            background: transparent;
+            border: 1px solid transparent;
+            color: #b3261e;
+            cursor: pointer;
+            transition: background-color 0.15s, border-color 0.15s, color 0.15s;
+        }
+        .btn-remove:hover {
+            background: #fdecea;
+            border-color: #f3c2bd;
+        }
+        .btn-remove.is-restore {
+            color: #2e7d32;
+        }
+        .btn-remove.is-restore:hover {
+            background: #eaf5ea;
+            border-color: #c8e3c9;
+        }
+
         .input-wrap {
             position: relative;
             display: flex;
@@ -464,6 +498,12 @@
         .input-wrap input:focus {
             border-color: #c74642;
             box-shadow: 0 0 0 3px rgba(199, 70, 66, 0.12);
+        }
+        .input-wrap input:disabled {
+            background: #f0f0f0;
+            color: #a5a5a5;
+            cursor: not-allowed;
+            border-color: #e2e2e2;
         }
         .input-wrap .unit {
             position: absolute;
@@ -607,7 +647,8 @@
                     <div class="table-wrap">
                         <table>
                             <tbody>
-                                <tr>
+                                <!-- ↓↓↓ 测试提现：可删除（加 id） ↓↓↓ -->
+                                <tr id="row-test">
                                     <td class="col-action">Testauszahlungsbetrag:</td>
                                     <td class="col-amount" id="cell-test">50,00 €</td>
                                     <td class="col-status-icon">
@@ -620,11 +661,12 @@
                                     </td>
                                     <td class="col-status-text">Vom System freigegeben</td>
                                 </tr>
+                                <!-- ↓↓↓ 第一笔：状态图标与文本加 id，方便与 test 联动 ↓↓↓ -->
                                 <tr>
                                     <td class="col-action">Erste Auszahlung:</td>
                                     <td class="col-amount" id="cell-first">50,00 €</td>
                                     <td class="col-status-icon">
-                                        <span class="status-icon icon-error">
+                                        <span class="status-icon icon-error" id="icon-first">
                                             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                                                 <circle cx="12" cy="12" r="10"></circle>
                                                 <line x1="15" y1="9" x2="9" y2="15"></line>
@@ -632,8 +674,9 @@
                                             </svg>
                                         </span>
                                     </td>
-                                    <td class="col-status-text">Vom System abgelehnt</td>
+                                    <td class="col-status-text" id="text-first">Vom System abgelehnt</td>
                                 </tr>
+                                <!-- ↓↓↓ 第二笔：状态文本加 id，方便与 test 联动 ↓↓↓ -->
                                 <tr>
                                     <td class="col-action">Zweite Auszahlung:</td>
                                     <td class="col-amount" id="cell-second">1.000,00 €</td>
@@ -646,8 +689,9 @@
                                             </svg>
                                         </span>
                                     </td>
-                                    <td class="col-status-text">Keine abgehobenen Mittel festgestellt</td>
+                                    <td class="col-status-text" id="text-second">Keine abgehobenen Mittel festgestellt</td>
                                 </tr>
+                                <!-- ↓↓↓ 第三笔：普通行 ↓↓↓ -->
                                 <tr>
                                     <td class="col-action">Dritte Auszahlung:</td>
                                     <td class="col-amount" id="cell-third">Gesamtes Kontoguthaben</td>
@@ -710,14 +754,19 @@
             <!-- 金额组 -->
             <div class="panel-group-title">金额</div>
 
+            <!-- 测试提现金额：带删除按钮 -->
             <div class="field">
-                <label for="input-test">测试提现金额</label>
+                <div class="field-head">
+                    <label for="input-test">测试提现金额</label>
+                    <button class="btn-remove" type="button" id="removeTestBtn" title="删除测试提现选项">删除</button>
+                </div>
                 <div class="input-wrap">
                     <input type="text" id="input-test" value="50,00" autocomplete="off">
                     <span class="unit">€</span>
                 </div>
             </div>
 
+            <!-- 第一次提现金额：普通输入框 -->
             <div class="field">
                 <label for="input-first">第一次提现金额</label>
                 <div class="input-wrap">
@@ -726,6 +775,7 @@
                 </div>
             </div>
 
+            <!-- 第二次提现金额：普通输入框 -->
             <div class="field">
                 <label for="input-second">第二次提现金额</label>
                 <div class="input-wrap">
@@ -734,6 +784,7 @@
                 </div>
             </div>
 
+            <!-- 第三次提现金额：普通输入框 -->
             <div class="field">
                 <label for="input-third">第三次提现金额</label>
                 <div class="input-wrap">
@@ -742,7 +793,12 @@
             </div>
 
             <div class="panel-hint">
-                修改后点击“应用”，系统报告中的金额将同步更新。
+                修改后点击“应用”，系统报告中的金额将同步更新。<br>
+                点击“删除”可移除测试提现选项，刷新页面后自动恢复。<br>
+                <span style="color:#b3261e;">
+                    删除“测试提现”时：“第一次提现”状态变为 ✅，<br>
+                    “第二次提现”备注变为 “Vom System abgelehnt”。
+                </span>
             </div>
 
             <div class="saved-hint" id="savedHint">✓ 修改已应用</div>
@@ -765,10 +821,7 @@
             const mm = String(now.getMonth() + 1).padStart(2, '0');
             const yyyy = now.getFullYear();
 
-            // 填充"Letzte Prüfung"日期
             document.getElementById('lastCheckDate').textContent = dd + '.' + mm + '.' + yyyy;
-
-            // 同时把 Vorgang 编号中的年份更新为当前年份（如不需要可删除此行）
             document.getElementById('vorgangId').textContent = 'SYS-' + yyyy + '-8841';
 
             /* ---------- 默认值 ---------- */
@@ -789,7 +842,7 @@
                 third:   document.getElementById('input-third')
             };
 
-            /* ---------- 系统窗口中对应的显示节点 ---------- */
+            /* ---------- 系统窗口显示节点 ---------- */
             const accountDisplay = document.getElementById('accountDisplay');
 
             const cells = {
@@ -798,6 +851,38 @@
                 second: document.getElementById('cell-second'),
                 third:  document.getElementById('cell-third')
             };
+
+            /* ---------- 测试提现：行、按钮、状态 ---------- */
+            const testRow = document.getElementById('row-test');
+            const testBtn = document.getElementById('removeTestBtn');
+            let testRemoved = false;
+
+            /* ---------- 第一次 / 第二次提现的联动节点 ---------- */
+            const firstIconEl = document.getElementById('icon-first');
+            const firstTextEl = document.getElementById('text-first');
+            const secondTextEl = document.getElementById('text-second');
+
+            /* ---------- 文本常量 ---------- */
+            const FIRST_APPROVED_TEXT  = 'Vom System freigegeben';
+            const FIRST_REJECTED_TEXT  = 'Vom System abgelehnt';
+            const SECOND_ORIGINAL_TEXT = 'Keine abgehobenen Mittel festgestellt';
+            const SECOND_REJECTED_TEXT = 'Vom System abgelehnt';
+
+            /* ---------- SVG 片段 ---------- */
+            const SVG_SUCCESS =
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ' +
+                'stroke-linecap="round" stroke-linejoin="round">' +
+                '<circle cx="12" cy="12" r="10"></circle>' +
+                '<polyline points="8 12 11 15 16 9"></polyline>' +
+                '</svg>';
+
+            const SVG_ERROR =
+                '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" ' +
+                'stroke-linecap="round" stroke-linejoin="round">' +
+                '<circle cx="12" cy="12" r="10"></circle>' +
+                '<line x1="15" y1="9" x2="9" y2="15"></line>' +
+                '<line x1="9" y1="9" x2="15" y2="15"></line>' +
+                '</svg>';
 
             const savedHint = document.getElementById('savedHint');
 
@@ -847,13 +932,58 @@
 
             /* ---------- 提示闪现 ---------- */
             let hintTimer = null;
-            function flashHint() {
+            function flashHint(message) {
+                if (message) savedHint.textContent = message;
                 savedHint.classList.add('show');
                 clearTimeout(hintTimer);
                 hintTimer = setTimeout(function () {
                     savedHint.classList.remove('show');
                 }, 2000);
             }
+
+            /* ---------- 根据 test 删除状态刷新联动 ---------- */
+            function updateLinkedStatus() {
+                if (testRemoved) {
+                    // 测试提现已删除 → 第一次提现 ✅；第二次提现备注变 abgelehnt
+                    firstIconEl.classList.remove('icon-error');
+                    firstIconEl.classList.add('icon-success');
+                    firstIconEl.innerHTML = SVG_SUCCESS;
+                    firstTextEl.textContent = FIRST_APPROVED_TEXT;
+                    secondTextEl.textContent = SECOND_REJECTED_TEXT;
+                } else {
+                    // 测试提现存在 → 第一次提现 ❌；第二次提现备注恢复原文
+                    firstIconEl.classList.remove('icon-success');
+                    firstIconEl.classList.add('icon-error');
+                    firstIconEl.innerHTML = SVG_ERROR;
+                    firstTextEl.textContent = FIRST_REJECTED_TEXT;
+                    secondTextEl.textContent = SECOND_ORIGINAL_TEXT;
+                }
+            }
+
+            /* ---------- 删除 / 恢复 测试提现 ---------- */
+            function setTestRemoved(removed) {
+                testRemoved = removed;
+
+                // 系统报告：隐藏 / 显示整行
+                testRow.style.display = removed ? 'none' : '';
+
+                // 编辑面板：禁用 / 启用输入框
+                inputs.test.disabled = removed;
+
+                // 按钮文案与样式
+                testBtn.textContent = removed ? '恢复' : '删除';
+                testBtn.classList.toggle('is-restore', removed);
+                testBtn.title = removed ? '恢复测试提现选项' : '删除测试提现选项';
+
+                // 联动第一次 / 第二次提现
+                updateLinkedStatus();
+            }
+
+            /* ---------- 删除按钮事件 ---------- */
+            testBtn.addEventListener('click', function () {
+                setTestRemoved(!testRemoved);
+                flashHint(testRemoved ? '✓ 已删除测试提现' : '✓ 已恢复测试提现');
+            });
 
             /* ---------- 应用 ---------- */
             document.getElementById('applyBtn').addEventListener('click', function () {
@@ -862,7 +992,7 @@
                 renderAmount('first');
                 renderAmount('second');
                 renderAmount('third');
-                flashHint();
+                flashHint('✓ 修改已应用');
             });
 
             /* ---------- 重置 ---------- */
@@ -873,14 +1003,20 @@
                 inputs.second.value  = '1.000,00';
                 inputs.third.value   = 'Gesamtes Kontoguthaben';
 
+                // 恢复测试提现
+                setTestRemoved(false);
+
                 accountDisplay.textContent = defaults.account;
                 cells.test.textContent     = defaults.test;
                 cells.first.textContent    = defaults.first;
                 cells.second.textContent   = defaults.second;
                 cells.third.textContent    = defaults.third;
 
-                flashHint();
+                flashHint('✓ 已重置为默认值');
             });
+
+            /* ---------- 初始化 ---------- */
+            updateLinkedStatus();
         })();
     </script>
 </body>
