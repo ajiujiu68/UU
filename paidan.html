@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="de" style="margin:0;padding:0;">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>派单+维修</title>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Spectral:wght@500;600;700&family=Public+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css">
+
+<style>
+  :root{
+    --bg:#eef1f6; --card:#ffffff; --text:#162033; --muted:#6b7a90;
+    --accent:#0b3d91; --accent-soft:rgba(11,61,145,.09);
+    --accent2:#b8860b; --accent2-soft:rgba(184,134,11,.10);
+    --gold:#f7c948;
+    --success:#0d7a5f; --success-soft:rgba(13,122,95,.10);
+    --border:rgba(22,32,51,.10);
+  }
+
+  /* ——— Basis / Reset ——— */
+  *,*::before,*::after{box-sizing:border-box;}
+  html{margin:0;padding:0;}
+  body{
+    font-family:'Public Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+    background:var(--bg); color:var(--text);
+    margin:0; padding:24px 16px;
+    -webkit-font-smoothing:antialiased;
+    -moz-osx-font-smoothing:grayscale;
+  }
+  button,input,select,textarea{font-family:inherit;font-size:100%;line-height:inherit;}
+  button{cursor:pointer;}
+
+  /* ——— 轻量级工具类（替代 Tailwind CDN，零闪烁、离线可用） ——— */
+  .flex{display:flex;}
+  .flex-wrap{flex-wrap:wrap;}
+  .items-center{align-items:center;}
+  .items-end{align-items:flex-end;}
+  .items-stretch{align-items:stretch;}
+  .gap-3{gap:12px;}
+  .gap-4{gap:16px;}
+
+  /* ——— 布局 ——— */
+  .shell{
+    max-width:1180px; margin:0 auto; background:#fff;
+    border:1px solid var(--border); border-radius:18px;
+    box-shadow:0 12px 40px rgba(11,61,145,.10); overflow:hidden;
+  }
+  .shell-body{display:flex; flex-wrap:wrap; align-items:stretch;}
+  .sidebar{
+    width:230px; flex-shrink:0;
+    border-right:1px solid var(--border);
+    background:#fcfdfe; display:flex; flex-direction:column;
+  }
+  .main{flex:1; min-width:300px; padding:26px; background:#f7f9fc;}
+
+  /* ——— Typografie / 通用 ——— */
+  .font-display{font-family:'Spectral',serif;}
+  .num{font-variant-numeric:tabular-nums;}
+
+  /* ——— 侧边导航 ——— */
+  .menu-item{
+    display:flex; align-items:center; gap:12px; padding:10px 16px;
+    font-size:13.5px; font-weight:500; color:#3a4760;
+    border-radius:7px; cursor:pointer;
+    transition:background .15s,color .15s;
+  }
+  .menu-item:hover{background:#f1f4f9; color:var(--accent);}
+  .menu-item i{font-size:18px; color:#7a879c; width:20px; text-align:center;}
+  .menu-item:hover i{color:var(--accent);}
+
+  .submenu-item{
+    display:flex; align-items:center; gap:9px;
+    padding:8px 16px 8px 48px; font-size:12.5px; color:#7a879c;
+    cursor:pointer; border-radius:6px; position:relative;
+    transition:background .15s,color .15s;
+  }
+  .submenu-item:hover{background:#f1f4f9; color:#3a4760;}
+  .submenu-item .dot{width:5px; height:5px; border-radius:50%; background:#c4ccd8; flex-shrink:0;}
+  .submenu-item.active{background:var(--accent-soft); color:var(--accent); font-weight:600;}
+  .submenu-item.active::before{
+    content:""; position:absolute; left:0; top:4px; bottom:4px;
+    width:3px; border-radius:2px; background:var(--accent);
+  }
+  .submenu-item.active .dot{background:var(--accent);}
+
+  .logout-btn{
+    display:flex; align-items:center; justify-content:center; gap:8px;
+    width:100%; padding:9px; border:1px solid #d7dee8; border-radius:8px;
+    background:#fff; color:#5a6780; font-size:13px; font-weight:600;
+    transition:all .15s;
+  }
+  .logout-btn:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
+
+  /* ——— 数据表格 ——— */
+  .table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
+  .data-table{width:100%; min-width:620px; border-collapse:collapse; font-size:13.5px;}
+  .data-table thead th{
+    background:linear-gradient(135deg,#0b3d91,#1453b8); color:#fff;
+    font-weight:600; padding:12px 14px; text-align:left;
+    font-size:12.5px; letter-spacing:.02em;
+  }
+  .data-table thead th.num-col{text-align:right;}
+  .data-table tbody td{
+    padding:14px; border-bottom:1px solid var(--border);
+    color:#2a3550; transition:background .2s;
+  }
+  .data-table tbody td.num-col{text-align:right; font-weight:600;}
+  .data-table tbody tr{transition:background .15s;}
+  .data-table tbody tr:hover{background:#f7f9fd;}
+  .data-table tbody tr:last-child td{border-bottom:none;}
+  .data-table tbody tr.flash td{background:#fff8e1;}
+
+  .opt-badge{
+    display:inline-flex; align-items:center; justify-content:center;
+    width:26px; height:26px; border-radius:7px;
+    background:var(--accent-soft); color:var(--accent);
+    font-weight:700; font-size:12px; margin-right:10px;
+  }
+  .type-pill{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:4px 10px; border-radius:20px;
+    background:var(--accent2-soft); color:#8a6508;
+    font-size:12px; font-weight:600;
+    border:1px solid rgba(184,134,11,.25);
+  }
+  .pct-bar{
+    display:inline-block; width:40px; height:6px; border-radius:3px;
+    background:#e6ebf3; vertical-align:middle; margin-right:8px; overflow:hidden;
+  }
+  .pct-bar i{
+    display:block; height:100%; width:0;
+    background:linear-gradient(90deg,#0b3d91,#1d63d8);
+    border-radius:3px; transition:width .3s;
+  }
+
+  /* ——— 概览卡片 ——— */
+  .sum-card{
+    flex:1; min-width:170px; background:#fff;
+    border:1px solid var(--border); border-radius:12px;
+    padding:16px 18px; position:relative; overflow:hidden;
+    transition:transform .2s,box-shadow .2s;
+  }
+  .sum-card:hover{transform:translateY(-3px); box-shadow:0 10px 24px rgba(11,61,145,.10);}
+  .sum-card::before{content:""; position:absolute; left:0; top:0; bottom:0; width:4px;}
+  .sum-card.c1::before{background:#1d63d8;}
+  .sum-card.c2::before{background:#0d7a5f;}
+  .sum-card.c3::before{background:#b8860b;}
+  .sum-row{
+    display:flex; justify-content:space-between; align-items:baseline;
+    font-size:12.5px; padding:4px 0; color:#4a5870;
+  }
+  .sum-row span:last-child{font-weight:700; color:var(--text);}
+
+  .live-tag{
+    display:inline-flex; align-items:center; gap:5px;
+    padding:3px 10px; border-radius:20px;
+    background:rgba(13,122,95,.1); color:#0d7a5f;
+    font-size:11px; font-weight:700;
+    border:1px solid rgba(13,122,95,.3);
+  }
+
+  /* ——— 编辑器控件 ——— */
+  .calc-input{
+    padding:9px 12px; border:1.5px solid #d7dee8; border-radius:9px;
+    font-size:14px; font-weight:600; color:var(--text);
+    outline:none; font-variant-numeric:tabular-nums;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .calc-input.full{width:100%;}
+  .calc-input:focus{border-color:#0d7a5f; box-shadow:0 0 0 3px rgba(13,122,95,.12);}
+
+  .base-input{
+    padding:9px 12px; border:1.5px solid #b8860b; border-radius:9px;
+    font-size:14px; font-weight:700; color:#8a6508;
+    outline:none; font-variant-numeric:tabular-nums; background:#fffbeb;
+    transition:box-shadow .15s;
+  }
+  .base-input:focus{box-shadow:0 0 0 3px rgba(184,134,11,.15);}
+
+  .opt-edit-col{
+    flex:1; min-width:180px; background:#fafbfc;
+    border:1px solid var(--border); border-radius:12px; padding:14px 16px;
+  }
+  .result-box{
+    background:linear-gradient(135deg,#0b3d91,#1453b8);
+    border-radius:12px; padding:14px 18px; color:#fff;
+  }
+  .reset-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 16px; border-radius:8px;
+    border:1px solid #d7dee8; background:#fff;
+    font-size:12.5px; font-weight:600; color:#5a6780;
+    transition:all .15s;
+  }
+  .reset-btn:hover{border-color:#dc2626; color:#dc2626; background:rgba(220,38,38,.06);}
+
+  /* ——— 备注区 ——— */
+  .note-display{
+    display:none; margin-top:18px;
+    background:#fffbeb; border:1px solid #f3e3a8;
+    border-left:4px solid #b8860b; border-radius:10px;
+    padding:12px 16px; align-items:center; gap:10px;
+    animation:noteIn .3s ease;
+  }
+  .note-display.is-visible{display:flex;}
+  .note-close{
+    background:none; border:none; padding:2px; line-height:0;
+    color:#b8860b; opacity:.55; transition:opacity .15s;
+  }
+  .note-close:hover{opacity:1;}
+
+  .note-input-editor{
+    width:100%; padding:10px 14px;
+    border:1.5px solid #d7dee8; border-radius:9px;
+    font-size:13.5px; color:var(--text); outline:none;
+    resize:vertical; min-height:84px;
+    transition:border-color .15s,box-shadow .15s;
+  }
+  .note-input-editor:focus{border-color:#b8860b; box-shadow:0 0 0 3px rgba(184,134,11,.12);}
+  .note-input-editor::placeholder{color:#a0aabc;}
+
+  /* ——— 备注显示/隐藏按钮 ——— */
+  .note-toggle-btn{
+    display:inline-flex; align-items:center; gap:6px;
+    padding:7px 16px; border-radius:8px;
+    border:1px solid #d7dee8; background:#fff;
+    font-size:12.5px; font-weight:600; color:#5a6780;
+    transition:all .15s;
+  }
+  .note-toggle-btn:hover{border-color:#b8860b; color:#8a6508; background:var(--accent2-soft);}
+  .note-toggle-btn.is-active{border-color:#b8860b; background:var(--accent2-soft); color:#8a6508; box-shadow:0 0 0 3px rgba(184,134,11,.10);}
+
+  /* ——— 视图切换（多布局） ——— */
+  .view{display:none;}
+  .view.is-active{display:block; animation:fadeUp .45s ease both;}
+  .submenu-item{user-select:none;}
+  .submenu-item:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
+  .rep-kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:18px;}
+  .rep-kpi{background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px 16px;}
+  .rep-kpi .k{font-size:11.5px; color:var(--muted); font-weight:600; letter-spacing:.02em;}
+  .rep-kpi .v{font-size:22px; font-weight:700; margin-top:4px; font-variant-numeric:tabular-nums;}
+  .rep-kpi .v.ok{color:var(--success);} .rep-kpi .v.warn{color:#b8860b;} .rep-kpi .v.bad{color:#b91c1c;}
+  .rep-grid{display:grid; grid-template-columns:minmax(280px,380px) 1fr; gap:18px; align-items:start;}
+  @media (max-width:860px){ .rep-grid{grid-template-columns:1fr;} }
+  .rep-form-card, .rep-list-card{background:#fff; border:1px solid var(--border); border-radius:14px; padding:18px 20px;}
+  .rep-field{margin-bottom:14px;}
+  .rep-field label{display:block; font-size:11.5px; font-weight:600; color:var(--muted); margin-bottom:5px;}
+  .rep-field input, .rep-field select, .rep-field textarea{width:100%; padding:9px 12px; border:1.5px solid #d7dee8; border-radius:9px; font-size:13.5px; color:var(--text); outline:none; background:#fff; font-family:inherit; transition:border-color .15s,box-shadow .15s;}
+  .rep-field textarea{resize:vertical; min-height:76px;}
+  .rep-field input:focus, .rep-field select:focus, .rep-field textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
+  .rep-submit{width:100%; padding:11px; border:none; border-radius:9px; background:linear-gradient(135deg,#0b3d91,#1453b8); color:#fff; font-weight:700; font-size:14px; transition:opacity .15s, transform .1s; cursor:pointer;}
+  .rep-submit:hover{opacity:.92;} .rep-submit:active{transform:translateY(1px);}
+  .rep-ticket{display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); align-items:flex-start;}
+  .rep-ticket:last-child{border-bottom:none; padding-bottom:0;}
+  .rep-ticket .t-id{font-family:'Spectral',serif; font-weight:700; color:var(--accent); font-size:15px; min-width:92px;}
+  .rep-ticket .t-meta{flex:1; min-width:0;}
+  .rep-ticket .t-title{font-weight:600; font-size:13.5px; margin-bottom:3px;}
+  .rep-ticket .t-sub{font-size:12px; color:var(--muted);}
+  .status-pill{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap;}
+  .st-offen{background:rgba(220,38,38,.08); color:#b91c1c; border:1px solid rgba(220,38,38,.25);}
+  .st-arbeit{background:var(--accent2-soft); color:#8a6508; border:1px solid rgba(184,134,11,.3);}
+  .st-done{background:var(--success-soft); color:#0d7a5f; border:1px solid rgba(13,122,95,.3);}
+  .ph-card{background:#fff; border:1px dashed #c4ccd8; border-radius:14px; padding:48px 24px; text-align:center; color:var(--muted);}
+  .ph-card i{font-size:36px; color:#c4ccd8; margin-bottom:10px; display:block;}
+  .ph-card strong{display:block; color:var(--text); font-size:16px; margin-bottom:4px;}
+  /* ——— Reparatur 视图：红色主题布局 ——— */
+  .rep-cards{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
+  .rep-card{flex:1;min-width:240px;background:#fff;border:1px solid #e8c4c4;border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
+  .rep-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(139,26,26,.10);}
+  .rep-card::before{content:"";position:absolute;left:0;top:0;bottom:0;width:4px;background:#a31f1f;}
+  .rep-card.opt2::before{background:#6f1010;}
+  .rep-card .rc-head{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+  .rep-card .rc-badge{width:24px;height:24px;border-radius:6px;background:#a31f1f;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;}
+  .rep-card.opt2 .rc-badge{background:#6f1010;}
+  .rep-table-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;background:#fff;border:1px solid #e8c4c4;border-radius:14px;overflow:hidden;margin-bottom:18px;}
+  .rep-table{width:100%;min-width:620px;border-collapse:collapse;font-size:13.5px;}
+  .rep-table thead th{background:linear-gradient(135deg,#8b1a1a,#a31f1f);color:#fff;font-weight:600;padding:12px 14px;text-align:left;font-size:12.5px;letter-spacing:.02em;}
+  .rep-table thead th.num-col{text-align:right;}
+  .rep-table tbody td{padding:14px;border-bottom:1px solid #f0d6d6;color:#2a3550;}
+  .rep-table tbody td.num-col{text-align:right;font-weight:600;}
+  .rep-table tbody tr{background:#fdf2f2;transition:background .15s;}
+  .rep-table tbody tr:hover{background:#fbe6e6;}
+  .rep-table tbody tr:last-child td{border-bottom:none;}
+  .rep-type-pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:20px;background:rgba(163,31,31,.10);color:#8b1a1a;font-size:12px;font-weight:600;border:1px solid rgba(163,31,31,.28);}
+  .rep-note{background:linear-gradient(135deg,#8b1a1a,#a31f1f);color:#fff;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.65;display:flex;gap:10px;align-items:flex-start;}
+  .rep-note i{flex-shrink:0;font-size:18px;margin-top:2px;}
+  .rep-note strong{font-weight:700;}
+  @keyframes noteIn{from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);}}
+  @keyframes fadeUp{from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);}}
+  .reveal{animation:fadeUp .5s ease both;}
+  .d1{animation-delay:.05s}
+  .d2{animation-delay:.12s}
+  .d3{animation-delay:.2s}
+  .d4{animation-delay:.3s}
+
+  /* ——— 响应式 ——— */
+  @media (max-width:760px){
+    body{padding:14px 10px;}
+    .shell{border-radius:14px;}
+    .sidebar{width:100%; border-right:none; border-bottom:1px solid var(--border);}
+    .main{padding:18px 16px;}
+    .note-display{margin-top:14px;}
+  }
+
+  /* ——— 降低动效偏好 ——— */
+  @media (prefers-reduced-motion: reduce){
+    *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
+  }
+</style>
+</head>
+
+<body>
+
+<!-- ============ 框一：主数据框（全德语） ============ -->
+<div class="shell reveal d1">
+  <div class="shell-body">
+
+    <!-- 左侧导航 -->
+    <aside class="sidebar">
+      <div style="background:linear-gradient(135deg,#0b3d91 0%,#1453b8 100%);padding:18px;display:flex;align-items:center;gap:11px;position:relative;overflow:hidden;">
+        <div style="position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(247,201,72,.22),transparent 70%);"></div>
+        <div style="width:38px;height:38px;border-radius:10px;background:rgba(255,255,255,.16);border:1px solid rgba(247,201,72,.4);display:flex;align-items:center;justify-content:center;flex-shrink:0;position:relative;z-index:1;">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" aria-hidden="true" focusable="false">
+            <circle cx="19.2" cy="4.8" r="1.9" fill="#f7c948"/>
+            <circle cx="4.8" cy="19.2" r="1.3" fill="#f7c948" opacity=".65"/>
+            <path d="M17.8 6.2 L15.2 8.2" stroke="#f7c948" stroke-width="1" stroke-linecap="round" opacity=".7"/>
+            <path d="M6.2 17.8 L8.8 15.8" stroke="#f7c948" stroke-width="1" stroke-linecap="round" opacity=".5"/>
+            <circle cx="11" cy="12.5" r="8" stroke="#f7c948" stroke-width="1.6"/>
+            <circle cx="11" cy="12.5" r="5.2" stroke="#f7c948" stroke-width="1" opacity=".45"/>
+            <path d="M13.6 9.4 A3.4 3.4 0 1 0 13.6 15.6" stroke="#ffffff" stroke-width="2.3" stroke-linecap="round" fill="none"/>
+            <line x1="10.2" y1="9" x2="13.8" y2="9" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+            <line x1="10.2" y1="16" x2="13.8" y2="16" stroke="#ffffff" stroke-width="1.4" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div style="position:relative;z-index:1;">
+          <div style="color:#fff;font-weight:700;font-size:14.5px;letter-spacing:.2px;">Crypto Currency</div>
+          <div style="color:rgba(247,201,72,.85);font-size:10px;margin-top:2px;letter-spacing:.35px;font-weight:600;">DIGITAL ASSETS</div>
+        </div>
+      </div>
+
+      <nav style="padding:12px 10px;flex:1;" aria-label="Hauptnavigation">
+        <div class="menu-item"><i class="ri-home-5-line" aria-hidden="true"></i><span>Startseite</span></div>
+        <div class="menu-item" style="color:var(--accent);font-weight:600;">
+          <i class="ri-database-2-line" aria-hidden="true" style="color:var(--accent);"></i>
+          <span style="flex:1;">Daten</span>
+          <i class="ri-arrow-down-s-line" aria-hidden="true" style="font-size:16px;color:var(--accent);"></i>
+        </div>
+        <div style="padding:2px 0 6px;" role="group" aria-label="Daten">
+          <div class="submenu-item" data-view="produkte" role="button" tabindex="0"><span class="dot"></span>Produkte finden</div>
+          <div class="submenu-item active" data-view="warendaten" role="button" tabindex="0" aria-current="page"><span class="dot"></span>Warendaten</div>
+          <div class="submenu-item" data-view="reparatur" role="button" tabindex="0"><span class="dot"></span>Daten zur Reparatur</div>
+          <div class="submenu-item" data-view="zusaetzlich" role="button" tabindex="0"><span class="dot"></span>Zusätzliche Daten</div>
+          <div class="submenu-item" data-view="einrichten" role="button" tabindex="0"><span class="dot"></span>Daten einrichten</div>
+        </div>
+        <div style="height:1px;background:var(--border);margin:6px 8px;"></div>
+        <div class="menu-item"><i class="ri-bank-card-line" aria-hidden="true"></i><span>Zahlungstor</span></div>
+        <div class="menu-item"><i class="ri-file-text-line" aria-hidden="true"></i><span>Kreditbericht</span></div>
+        <div class="menu-item"><i class="ri-shield-check-line" aria-hidden="true"></i><span>Konto überprüfen</span></div>
+        <div class="menu-item"><i class="ri-bar-chart-box-line" aria-hidden="true"></i><span>Bericht</span></div>
+        <div class="menu-item"><i class="ri-notification-3-line" aria-hidden="true"></i><span>Melden</span></div>
+        <div class="menu-item"><i class="ri-price-tag-3-line" aria-hidden="true"></i><span>Ermäßigung</span></div>
+        <div class="menu-item"><i class="ri-settings-4-line" aria-hidden="true"></i><span>Systemeinstellung</span></div>
+      </nav>
+
+      <div style="padding:12px 14px 16px;border-top:1px solid var(--border);background:#fafbfc;">
+        <button type="button" class="logout-btn">
+          <i class="ri-logout-box-r-line" aria-hidden="true" style="font-size:16px;"></i>Ausgehen
+        </button>
+      </div>
+    </aside>
+
+    <!-- 右侧主内容（全德语） -->
+    <main class="main">
+      <div style="margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:8px;">
+          <span>Startseite</span>
+          <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
+          <span>Daten</span>
+          <i class="ri-arrow-right-s-line" aria-hidden="true"></i>
+          <span style="color:var(--accent);font-weight:600;" id="crumb-current">Warendaten</span>
+        </div>
+        <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+          <h1 class="font-display" style="font-size:28px;font-weight:700;margin:0;letter-spacing:-.3px;">Datenmanagement</h1>
+          <span class="live-tag"><i class="ri-refresh-line" aria-hidden="true" style="font-size:12px;"></i>Live-Aktualisierung</span>
+        </div>
+        <p style="color:var(--muted);font-size:13px;margin:5px 0 0;" id="view-subtitle">Gewinnaufträge &amp; Auszahlungsbeträge</p>
+      </div>
+
+      <section id="view-warendaten" class="view is-active">
+      <!-- 选项概览 -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:18px;">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
+          <i class="ri-list-check-2" aria-hidden="true" style="color:var(--accent);font-size:18px;"></i>
+          <span style="font-weight:700;font-size:15px;">Optionsübersicht</span>
+          <span style="font-size:11.5px;color:var(--muted);margin-left:4px;">Drei Anzahlungspläne</span>
+        </div>
+
+        <div class="flex flex-wrap gap-3">
+          <div class="sum-card c1">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="width:24px;height:24px;border-radius:6px;background:#1d63d8;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">1</span>
+              <strong style="font-size:14px;">Option 1</strong>
+            </div>
+            <div class="sum-row"><span>Anzahlung</span><span class="num" id="sum-amt-1">500 €</span></div>
+            <div class="sum-row"><span id="sum-pct-label-1">40 % Gewinn</span><span class="num" id="sum-profit-1" style="color:var(--success);">+200 €</span></div>
+            <div class="sum-row" style="border-top:1px dashed var(--border);margin-top:6px;padding-top:8px;">
+              <span style="font-weight:700;">Gesamtbetrag</span><span class="num" id="sum-total-1" style="color:#1d63d8;font-size:16px;">700 €</span>
+            </div>
+          </div>
+
+          <div class="sum-card c2">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="width:24px;height:24px;border-radius:6px;background:#0d7a5f;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">2</span>
+              <strong style="font-size:14px;">Option 2</strong>
+            </div>
+            <div class="sum-row"><span>Anzahlung</span><span class="num" id="sum-amt-2">1.500 €</span></div>
+            <div class="sum-row"><span id="sum-pct-label-2">40 % Gewinn</span><span class="num" id="sum-profit-2" style="color:var(--success);">+600 €</span></div>
+            <div class="sum-row" style="border-top:1px dashed var(--border);margin-top:6px;padding-top:8px;">
+              <span style="font-weight:700;">Gesamtbetrag</span><span class="num" id="sum-total-2" style="color:#0d7a5f;font-size:16px;">2.100 €</span>
+            </div>
+          </div>
+
+          <div class="sum-card c3">
+            <div style="display:flex;align-items:center;gap:8px;margin-bottom:8px;">
+              <span style="width:24px;height:24px;border-radius:6px;background:#b8860b;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;">3</span>
+              <strong style="font-size:14px;">Option 3</strong>
+              <span style="margin-left:auto;padding:2px 8px;border-radius:10px;background:var(--accent2-soft);color:#8a6508;font-size:10px;font-weight:700;letter-spacing:.04em;">HÖCHSTE RENDITE</span>
+            </div>
+            <div class="sum-row"><span>Anzahlung</span><span class="num" id="sum-amt-3">4.000 €</span></div>
+            <div class="sum-row"><span id="sum-pct-label-3">40 % Gewinn</span><span class="num" id="sum-profit-3" style="color:var(--success);">+1.600 €</span></div>
+            <div class="sum-row" style="border-top:1px dashed var(--border);margin-top:6px;padding-top:8px;">
+              <span style="font-weight:700;">Gesamtbetrag</span><span class="num" id="sum-total-3" style="color:#b8860b;font-size:16px;">5.600 €</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 数据表格（德语） -->
+      <div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;">
+        <div style="padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
+          <div>
+            <h2 style="font-size:15px;font-weight:700;margin:0;">Gewinnauftrag — Optionenübersicht</h2>
+            <p style="font-size:12px;color:var(--muted);margin:3px 0 0;">Alle Beträge in Euro (€) · werden live aktualisiert</p>
+          </div>
+          <span class="type-pill"><i class="ri-file-list-3-line" aria-hidden="true" style="font-size:13px;"></i>3 Optionen · aktiv</span>
+        </div>
+
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead>
+              <tr>
+                <th scope="col">Optionen</th>
+                <th scope="col">Datentyp</th>
+                <th scope="col" class="num-col">Zahlungsbetrag</th>
+                <th scope="col" class="num-col">Prozent</th>
+                <th scope="col" class="num-col">Profitieren</th>
+                <th scope="col" class="num-col">Auszahlungsbetrag</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr id="row-1">
+                <td><span class="opt-badge num">1</span><strong style="font-weight:600;">Option 1</strong></td>
+                <td><span class="type-pill"><i class="ri-arrow-up-circle-line" aria-hidden="true" style="font-size:13px;"></i>Gewinnauftrag</span></td>
+                <td class="num-col num" id="tbl-amt-1">500,00 €</td>
+                <td class="num-col num"><span class="pct-bar"><i id="bar-1" style="width:40%;"></i></span><span id="tbl-pct-1">40 %</span></td>
+                <td class="num-col num" id="tbl-profit-1" style="color:var(--success);">+200,00 €</td>
+                <td class="num-col num" id="tbl-total-1" style="color:var(--accent);font-weight:700;">700,00 €</td>
+              </tr>
+
+              <tr id="row-2">
+                <td><span class="opt-badge num">2</span><strong style="font-weight:600;">Option 2</strong></td>
+                <td><span class="type-pill"><i class="ri-arrow-up-circle-line" aria-hidden="true" style="font-size:13px;"></i>Gewinnauftrag</span></td>
+                <td class="num-col num" id="tbl-amt-2">1.500,00 €</td>
+                <td class="num-col num"><span class="pct-bar"><i id="bar-2" style="width:40%;"></i></span><span id="tbl-pct-2">40 %</span></td>
+                <td class="num-col num" id="tbl-profit-2" style="color:var(--success);">+600,00 €</td>
+                <td class="num-col num" id="tbl-total-2" style="color:var(--accent);font-weight:700;">2.100,00 €</td>
+              </tr>
+
+              <tr id="row-3" style="background:#fbfcfe;">
+                <td><span class="opt-badge num">3</span><strong style="font-weight:700;">Option 3</strong></td>
+                <td><span class="type-pill"><i class="ri-arrow-up-circle-line" aria-hidden="true" style="font-size:13px;"></i>Gewinnauftrag</span></td>
+                <td class="num-col num" id="tbl-amt-3" style="font-weight:700;">4.000,00 €</td>
+                <td class="num-col num"><span class="pct-bar"><i id="bar-3" style="width:40%;"></i></span><span id="tbl-pct-3">40 %</span></td>
+                <td class="num-col num" id="tbl-profit-3" style="color:var(--success);font-weight:700;">+1.600,00 €</td>
+                <td class="num-col num" id="tbl-total-3" style="color:var(--accent);font-weight:800;">5.600,00 €</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- 备注展示区：默认隐藏，需点击"显示"按钮 -->
+      <div class="note-display" id="note-display" role="status" aria-live="polite">
+        <i class="ri-sticky-note-fill" aria-hidden="true" style="color:#b8860b;font-size:18px;flex-shrink:0;"></i>
+        <div id="note-text" style="flex:1;font-size:13.5px;color:#5a4a1a;line-height:1.6;word-break:break-word;"></div>
+        <button type="button" id="note-clear" class="note-close" aria-label="Notiz löschen" title="Notiz löschen">
+          <i class="ri-close-line" aria-hidden="true" style="font-size:18px;"></i>
+        </button>
+      </div>
+      </section>
+
+      <!-- ===== 视图：Daten zur Reparatur（红色主题，数字带 id 供编辑器联动） ===== -->
+      <section id="view-reparatur" class="view">
+        <!-- 标题条 -->
+        <div style="background:#fff;border:1px solid #e8c4c4;border-radius:14px;padding:16px 20px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <i class="ri-tools-line" aria-hidden="true" style="color:#a31f1f;font-size:18px;"></i>
+            <span style="font-weight:700;font-size:15px;">Reparatur-Optionen</span>
+          </div>
+        </div>
+        <!-- 两张概览卡 -->
+        <div class="rep-cards">
+          <div class="rep-card">
+            <div class="rc-head">
+              <span class="rc-badge">1</span>
+              <strong style="font-size:14px;">Option 1</strong>
+              <span style="margin-left:auto;padding:2px 8px;border-radius:10px;background:rgba(163,31,31,.08);color:#8b1a1a;font-size:10px;font-weight:700;letter-spacing:.04em;">MANUELL</span>
+            </div>
+            <div class="sum-row"><span>Zahlungsbetrag</span><span class="num" id="rep-sum-amt-1">13.600 €</span></div>
+            <div class="sum-row"><span id="rep-sum-pct-label-1">40 % Gewinn</span><span class="num" style="color:var(--success);" id="rep-sum-profit-1">+5.440 €</span></div>
+            <div class="sum-row" style="border-top:1px dashed #e8c4c4;margin-top:6px;padding-top:8px;">
+              <span style="font-weight:700;">Auszahlungsbetrag</span><span class="num" style="color:#a31f1f;font-size:16px;" id="rep-sum-total-1">19.040 €</span>
+            </div>
+          </div>
+          <div class="rep-card opt2">
+            <div class="rc-head">
+              <span class="rc-badge">2</span>
+              <strong style="font-size:14px;">Option 2</strong>
+              <span style="margin-left:auto;padding:2px 8px;border-radius:10px;background:rgba(163,31,31,.08);color:#8b1a1a;font-size:10px;font-weight:700;letter-spacing:.04em;">KI-SOFORT</span>
+            </div>
+            <div class="sum-row"><span>Zahlungsbetrag</span><span class="num" id="rep-sum-amt-2">23.100 €</span></div>
+            <div class="sum-row"><span id="rep-sum-pct-label-2">60 % Gewinn</span><span class="num" style="color:var(--success);" id="rep-sum-profit-2">+13.860 €</span></div>
+            <div class="sum-row" style="border-top:1px dashed #e8c4c4;margin-top:6px;padding-top:8px;">
+              <span style="font-weight:700;">Auszahlungsbetrag</span><span class="num" style="color:#a31f1f;font-size:16px;" id="rep-sum-total-2">36.960 €</span>
+            </div>
+          </div>
+        </div>
+        <!-- 数据表（红色主题） -->
+        <div class="rep-table-wrap">
+          <table class="rep-table">
+            <thead>
+              <tr>
+                <th>Optionen</th>
+                <th>Datentyp</th>
+                <th class="num-col">Zahlungsbetrag</th>
+                <th class="num-col">Prozent</th>
+                <th class="num-col">Profitieren</th>
+                <th class="num-col">Auszahlungsbetrag</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="opt-badge" style="background:rgba(163,31,31,.10);color:#8b1a1a;">1</span>Option 1</td>
+                <td><span class="rep-type-pill"><i class="ri-arrow-down-line" aria-hidden="true"></i>Auftrag reparieren</span></td>
+                <td class="num-col"><span id="rep-tbl-amt-1">13.600,00 €</span></td>
+                <td class="num-col"><span id="rep-tbl-pct-1">40 %</span></td>
+                <td class="num-col" style="color:var(--success);"><span id="rep-tbl-profit-1">+5.440,00 €</span></td>
+                <td class="num-col" style="color:#8b1a1a;font-weight:700;"><span id="rep-tbl-total-1">19.040,00 €</span></td>
+              </tr>
+              <tr>
+                <td><span class="opt-badge" style="background:rgba(163,31,31,.10);color:#8b1a1a;">2</span>Option 2</td>
+                <td><span class="rep-type-pill"><i class="ri-arrow-down-line" aria-hidden="true"></i>Auftrag reparieren</span></td>
+                <td class="num-col"><span id="rep-tbl-amt-2">23.100,00 €</span></td>
+                <td class="num-col"><span id="rep-tbl-pct-2">60 %</span></td>
+                <td class="num-col" style="color:var(--success);"><span id="rep-tbl-profit-2">+13.860,00 €</span></td>
+                <td class="num-col" style="color:#8b1a1a;font-weight:700;"><span id="rep-tbl-total-2">36.960,00 €</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <!-- 底部说明条 -->
+        <div class="rep-note">
+          <i class="ri-information-line" aria-hidden="true"></i>
+          <div><strong>Option 1:</strong> Das System weist Ihnen zufällig 1–2 Reparaturaufträge zu. Nach Abschluss der Reparaturlösungen erfolgt die gemeinsame Auszahlung. &nbsp; <strong>Option 2:</strong> Intelligente KI-Lösung: Sofortige Auszahlung, keinerlei Bedienung erforderlich.</div>
+        </div>
+      </section>
+
+      <section id="view-produkte" class="view">
+        <div class="ph-card"><i class="ri-search-line" aria-hidden="true"></i><strong>Produkte finden</strong><span>Diese Ansicht wird vorbereitet.</span></div>
+      </section>
+      <section id="view-zusaetzlich" class="view">
+        <div class="ph-card"><i class="ri-attachment-line" aria-hidden="true"></i><strong>Zusätzliche Daten</strong><span>Diese Ansicht wird vorbereitet.</span></div>
+      </section>
+      <section id="view-einrichten" class="view">
+        <div class="ph-card"><i class="ri-settings-3-line" aria-hidden="true"></i><strong>Daten einrichten</strong><span>Diese Ansicht wird vorbereitet.</span></div>
+      </section>
+    </main>
+  </div>
+</div>
+
+<!-- 分隔提示（德语） -->
+<div id="editor-block">
+<div style="max-width:1180px;margin:22px auto 14px;display:flex;align-items:center;gap:12px;">
+  <div style="flex:1;height:1px;background:var(--border);"></div>
+  <span style="font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600;white-space:nowrap;">
+    <i class="ri-edit-2-line" aria-hidden="true" style="margin-right:4px;"></i>Editor · Bearbeitungsbereich
+  </span>
+  <div style="flex:1;height:1px;background:var(--border);"></div>
+</div>
+
+<!-- ============ 框二：金额编辑器（保留中文，新增原金额） ============ -->
+<div class="reveal d4" style="max-width:1180px;margin:0 auto;background:#ffffff;border:1.5px solid #0d7a5f;border-radius:18px;box-shadow:0 8px 28px rgba(13,122,95,.10);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#0d7a5f,#0f9978);padding:16px 22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <i class="ri-calculator-line" aria-hidden="true" style="color:#fff;font-size:20px;"></i>
+    <span style="color:#fff;font-weight:700;font-size:15px;">金额编辑器</span>
+    <span style="color:rgba(255,255,255,.85);font-size:11.5px;margin-left:auto;display:inline-flex;align-items:center;gap:5px;">
+      <i class="ri-arrow-up-line" aria-hidden="true"></i>修改后上方数据同步更新
+    </span>
+  </div>
+
+  <div style="padding:22px;">
+    <!-- 原金额（统一基数，每档总金额均包含） -->
+    <div style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px dashed #e0c97a;border-radius:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
+      <i class="ri-coins-line" aria-hidden="true" style="color:#b8860b;font-size:20px;"></i>
+      <label for="inp-base" style="font-size:13px;font-weight:700;color:#8a6508;">原金额（统一基数）</label>
+      <input type="number" id="inp-base" class="base-input" value="0" min="0" step="50" inputmode="numeric" style="width:150px;">
+      <span style="font-size:11.5px;color:#a08a4a;">每档总金额 = 原金额 + 预付 + 利润　|　例：原金额200 + 预付500 + 利润200 = 总金额900</span>
+    </div>
+
+    <!-- 三档金额 + 利润率 -->
+    <div class="flex flex-wrap gap-3" style="margin-bottom:16px;">
+      <div class="opt-edit-col" style="border-top:3px solid #1d63d8;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:22px;height:22px;border-radius:6px;background:#1d63d8;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">1</span>
+          <strong style="font-size:13.5px;color:#1d63d8;">选项 1</strong>
+        </div>
+        <label for="inp-a1" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">预付金额 (€)</label>
+        <input type="number" id="inp-a1" class="calc-input full" value="500" min="0" step="50" inputmode="numeric" style="margin-bottom:10px;">
+        <label for="inp-p1" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">利润率 (%) · 独立</label>
+        <input type="number" id="inp-p1" class="calc-input full" value="40" min="0" max="100" step="1" inputmode="numeric">
+      </div>
+
+      <div class="opt-edit-col" style="border-top:3px solid #0d7a5f;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:22px;height:22px;border-radius:6px;background:#0d7a5f;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">2</span>
+          <strong style="font-size:13.5px;color:#0d7a5f;">选项 2</strong>
+        </div>
+        <label for="inp-a2" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">预付金额 (€)</label>
+        <input type="number" id="inp-a2" class="calc-input full" value="1500" min="0" step="50" inputmode="numeric" style="margin-bottom:10px;">
+        <label for="inp-p2" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">利润率 (%) · 独立</label>
+        <input type="number" id="inp-p2" class="calc-input full" value="40" min="0" max="100" step="1" inputmode="numeric">
+      </div>
+
+      <div class="opt-edit-col" style="border-top:3px solid #b8860b;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:22px;height:22px;border-radius:6px;background:#b8860b;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">3</span>
+          <strong style="font-size:13.5px;color:#b8860b;">选项 3</strong>
+        </div>
+        <label for="inp-a3" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">预付金额 (€)</label>
+        <input type="number" id="inp-a3" class="calc-input full" value="4000" min="0" step="50" inputmode="numeric" style="margin-bottom:10px;">
+        <label for="inp-p3" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">利润率 (%) · 独立</label>
+        <input type="number" id="inp-p3" class="calc-input full" value="40" min="0" max="100" step="1" inputmode="numeric">
+      </div>
+    </div>
+
+    <!-- 汇总 -->
+    <div class="flex flex-wrap gap-4 items-end">
+      <div class="result-box" style="flex:2;min-width:280px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
+        <div style="flex:1;min-width:80px;">
+          <div style="font-size:10.5px;opacity:.75;letter-spacing:.05em;text-transform:uppercase;">总预付</div>
+          <div class="num" id="out-sum-amt" style="font-size:18px;font-weight:700;margin-top:2px;">6.000 €</div>
+        </div>
+        <div style="width:1px;height:34px;background:rgba(255,255,255,.25);"></div>
+        <div style="flex:1;min-width:80px;">
+          <div style="font-size:10.5px;opacity:.75;letter-spacing:.05em;text-transform:uppercase;">总利润</div>
+          <div class="num" id="out-sum-profit" style="font-size:18px;font-weight:700;margin-top:2px;">+2.400 €</div>
+        </div>
+        <div style="width:1px;height:34px;background:rgba(255,255,255,.25);"></div>
+        <div style="flex:1;min-width:80px;">
+          <div style="font-size:10.5px;opacity:.75;letter-spacing:.05em;text-transform:uppercase;">总总计（含 3×原金额）</div>
+          <div class="num" id="out-sum-total" style="font-size:22px;font-weight:800;margin-top:2px;">8.400 €</div>
+        </div>
+      </div>
+      <button type="button" class="reset-btn" id="reset-btn"><i class="ri-refresh-line" aria-hidden="true"></i>恢复默认</button>
+    </div>
+
+    <!-- 备注输入框（中文，编辑入口；默认隐藏，点击"显示"才展示） -->
+    <div style="margin-top:16px;">
+      <label for="note-input" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;flex-wrap:wrap;">
+        <i class="ri-sticky-note-line" aria-hidden="true" style="color:#b8860b;font-size:15px;"></i>备注
+        <span style="font-weight:400;font-size:11px;color:#a0aabc;">— 默认隐藏；点击"显示"在上方表格下方展示，点击"隐藏"则完全不显示</span>
+      </label>
+      <textarea id="note-input" class="note-input-editor" rows="3" autocomplete="off"
+                placeholder="输入备注内容，将显示在上方表格下方；留空则完全不显示…">Diese Daten sind die letzte Bestellung für die Abhebung von Geldern. Nach Abschluss der Bestellung für die Abnahme von Geldern wird diese vorgezahlte Aufgabe abgeschlossen. Nach Abschluss der Aufgabe kontaktieren Sie die Finanzabteilung, um alle grundlegenden Mittel und Provisionen für diese vorgezahlte Aufgabe abzutragen. Wir wünschen Ihnen ein glückliches Leben!</textarea>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:10px;flex-wrap:wrap;">
+        <button type="button" class="note-toggle-btn" id="note-show-btn"><i class="ri-eye-line" aria-hidden="true"></i>显示</button>
+        <button type="button" class="note-toggle-btn" id="note-hide-btn"><i class="ri-eye-off-line" aria-hidden="true"></i>隐藏</button>
+        <span style="font-size:11px;color:#a0aabc;">点击"显示"在表格下方显示备注；点击"隐藏"则完全不显示</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+</div>
+<div id="rep-editor-block" style="display:none;">
+<div style="max-width:1180px;margin:22px auto 14px;display:flex;align-items:center;gap:12px;">
+  <div style="flex:1;height:1px;background:var(--border);"></div>
+  <span style="font-size:11.5px;color:var(--muted);letter-spacing:.08em;text-transform:uppercase;font-weight:600;white-space:nowrap;">
+    <i class="ri-edit-2-line" aria-hidden="true" style="margin-right:4px;"></i>编辑器 · 维修数据
+  </span>
+  <div style="flex:1;height:1px;background:var(--border);"></div>
+</div>
+<div class="reveal d4" style="max-width:1180px;margin:0 auto;background:#ffffff;border:1.5px solid #8b1a1a;border-radius:18px;box-shadow:0 8px 28px rgba(139,26,26,.10);overflow:hidden;">
+  <div style="background:linear-gradient(135deg,#8b1a1a,#a31f1f);padding:16px 22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+    <i class="ri-tools-line" aria-hidden="true" style="color:#fff;font-size:20px;"></i>
+    <span style="color:#fff;font-weight:700;font-size:15px;">维修数据编辑器</span>
+    <span style="color:rgba(255,255,255,.85);font-size:11.5px;margin-left:auto;display:inline-flex;align-items:center;gap:5px;">
+      <i class="ri-arrow-up-line" aria-hidden="true"></i>修改后上方数据同步更新
+    </span>
+  </div>
+  <div style="padding:20px 22px;">
+    <!-- 原金额（统一基数） -->
+    <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fffbeb;border:1px solid #f3e3a8;border-radius:10px;padding:12px 16px;margin-bottom:16px;">
+      <i class="ri-coins-line" aria-hidden="true" style="color:#b8860b;font-size:18px;"></i>
+      <label for="rep-inp-base" style="font-size:12.5px;font-weight:700;color:#8a6508;white-space:nowrap;">原金额（统一基数）</label>
+      <input type="number" id="rep-inp-base" class="base-input" value="0" min="0" step="100" inputmode="numeric" style="width:140px;">
+      <span style="font-size:11.5px;color:#a08a55;">每档出款 = 原金额 + 支付额 + 利润 ｜ 例：原金额200 + 支付13600 + 利润5440 = 出款19240</span>
+    </div>
+    <div class="flex flex-wrap gap-3" style="margin-bottom:16px;">
+      <div class="opt-edit-col" style="border-top:3px solid #a31f1f;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:22px;height:22px;border-radius:6px;background:#a31f1f;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">1</span>
+          <strong style="font-size:13.5px;color:#8b1a1a;">选项 1</strong>
+        </div>
+        <label for="rep-inp-a1" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">支付金额 (€)</label>
+        <input type="number" id="rep-inp-a1" class="calc-input full" value="13600" min="0" step="100" inputmode="numeric">
+        <div style="height:10px;"></div>
+        <label for="rep-inp-p1" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">利润率 (%) · 独立</label>
+        <input type="number" id="rep-inp-p1" class="calc-input full" value="40" min="0" max="100" step="1" inputmode="numeric">
+      </div>
+      <div class="opt-edit-col" style="border-top:3px solid #6f1010;">
+        <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
+          <span style="width:22px;height:22px;border-radius:6px;background:#6f1010;color:#fff;display:inline-flex;align-items:center;justify-content:center;font-weight:700;font-size:11px;">2</span>
+          <strong style="font-size:13.5px;color:#6f1010;">选项 2</strong>
+        </div>
+        <label for="rep-inp-a2" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">支付金额 (€)</label>
+        <input type="number" id="rep-inp-a2" class="calc-input full" value="23100" min="0" step="100" inputmode="numeric">
+        <div style="height:10px;"></div>
+        <label for="rep-inp-p2" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">利润率 (%) · 独立</label>
+        <input type="number" id="rep-inp-p2" class="calc-input full" value="60" min="0" max="100" step="1" inputmode="numeric">
+      </div>
+    </div>
+    <div style="display:flex;gap:12px;align-items:stretch;flex-wrap:wrap;">
+      <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#8b1a1a,#a31f1f);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:11.5px;opacity:.85;margin-bottom:4px;">总支付金额</div>
+        <div class="num" id="rep-out-sum-amt" style="font-size:20px;font-weight:700;">36.700 €</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#8b1a1a,#a31f1f);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:11.5px;opacity:.85;margin-bottom:4px;">总利润</div>
+        <div class="num" id="rep-out-sum-profit" style="font-size:20px;font-weight:700;">+19.300 €</div>
+      </div>
+      <div style="flex:1;min-width:180px;background:linear-gradient(135deg,#8b1a1a,#a31f1f);border-radius:12px;padding:14px 18px;color:#fff;">
+        <div style="font-size:11.5px;opacity:.85;margin-bottom:4px;">总出款（含 2×原金额）</div>
+        <div class="num" id="rep-out-sum-total" style="font-size:20px;font-weight:700;">56.000 €</div>
+      </div>
+      <button type="button" class="reset-btn" id="rep-reset-btn" style="align-self:center;"><i class="ri-refresh-line" aria-hidden="true"></i>恢复默认</button>
+    </div>
+  </div>
+</div>
+</div>
+
+<script>
+(function(){
+  'use strict';
+
+  /* ============ 数字格式化（缓存 Intl 实例，性能更佳） ============ */
+  var nfAmount = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
+  var nfMoney  = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+
+  var $ = function(id){ return document.getElementById(id); };
+
+  /* ============ 备注默认文案 ============ */
+  var NOTE_DEFAULT = 'Diese Daten sind die letzte Bestellung für die Abhebung von Geldern. Nach Abschluss der Bestellung für die Abnahme von Geldern wird diese vorgezahlte Aufgabe abgeschlossen. Nach Abschluss der Aufgabe kontaktieren Sie die Finanzabteilung, um alle grundlegenden Mittel und Provisionen für diese vorgezahlte Aufgabe abzutragen. Wir wünschen Ihnen ein glückliches Leben!';
+
+  /* ============ 元素引用（一次性缓存） ============ */
+  var baseInput = $('inp-base');
+  var noteInput = $('note-input');
+  var noteBox   = $('note-display');
+  var noteText  = $('note-text');
+
+  var opts = [1, 2, 3].map(function(i){
+    return {
+      amtInput:  $('inp-a' + i),
+      pctInput:  $('inp-p' + i),
+      sumAmt:    $('sum-amt-' + i),
+      sumPctLbl: $('sum-pct-label-' + i),
+      sumProfit: $('sum-profit-' + i),
+      sumTotal:  $('sum-total-' + i),
+      tblAmt:    $('tbl-amt-' + i),
+      tblPct:    $('tbl-pct-' + i),
+      tblProfit: $('tbl-profit-' + i),
+      tblTotal:  $('tbl-total-' + i),
+      bar:       $('bar-' + i),
+      row:       $('row-' + i)
+    };
+  });
+
+  var outSumAmt    = $('out-sum-amt');
+  var outSumProfit = $('out-sum-profit');
+  var outSumTotal  = $('out-sum-total');
+
+  /* ============ 工具函数 ============ */
+  function readNum(el){
+    var v = parseFloat(el.value);
+    return isFinite(v) ? v : 0;
+  }
+
+  function setText(el, txt){
+    if (el && el.textContent !== txt) el.textContent = txt;
+  }
+
+  var flashTimers = [];
+
+  /* ============ 核心计算 & 渲染 ============ */
+  function recalc(flash){
+    var base      = readNum(baseInput);
+    var totAmt    = 0;
+    var totProfit = 0;
+
+    opts.forEach(function(o, idx){
+      var amt    = readNum(o.amtInput);
+      var pct    = readNum(o.pctInput);
+      var profit = amt * pct / 100;
+      var total  = base + amt + profit;   // 总金额 = 原金额 + 预付 + 利润
+
+      totAmt    += amt;
+      totProfit += profit;
+
+      /* 概览卡片（德式短格式） */
+      setText(o.sumAmt,    nfAmount.format(amt) + ' €');
+      setText(o.sumPctLbl, pct + ' % Gewinn');
+      setText(o.sumProfit, '+' + nfAmount.format(profit) + ' €');
+      setText(o.sumTotal,  nfAmount.format(total) + ' €');
+
+      /* 数据表格（德式两位小数） */
+      setText(o.tblAmt,    nfMoney.format(amt) + ' €');
+      setText(o.tblPct,    pct + ' %');
+      setText(o.tblProfit, '+' + nfMoney.format(profit) + ' €');
+      setText(o.tblTotal,  nfMoney.format(total) + ' €');
+
+      /* 百分比进度条（安全钳位 0–100） */
+      o.bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+
+      /* 行高亮闪烁（清理旧定时器，避免堆叠） */
+      if (flash !== false){
+        o.row.classList.add('flash');
+        clearTimeout(flashTimers[idx]);
+        flashTimers[idx] = setTimeout(function(){ o.row.classList.remove('flash'); }, 400);
+      }
+    });
+
+    setText(outSumAmt,    nfAmount.format(totAmt) + ' €');
+    setText(outSumProfit, '+' + nfAmount.format(totProfit) + ' €');
+    /* 总总计 = 3×原金额 + 总预付 + 总利润（每档都含原金额） */
+    setText(outSumTotal,  nfAmount.format(3 * base + totAmt + totProfit) + ' €');
+  }
+
+  /* ============ 备注：默认隐藏，需手动点击"显示" ============ */
+  var noteVisible = false;   // ★ 默认隐藏
+
+  function syncNoteButtons(){
+    var has = noteInput.value.trim().length > 0;
+    var showBtn = $('note-show-btn');
+    var hideBtn = $('note-hide-btn');
+    if (showBtn) showBtn.classList.toggle('is-active', noteVisible && has);
+    if (hideBtn) hideBtn.classList.toggle('is-active', !(noteVisible && has));
+  }
+
+  function toggleNote(){
+    var v = noteInput.value.trim();
+    if (v && noteVisible){          // 有内容 且 开关打开 → 显示
+      setText(noteText, v);
+      noteBox.classList.add('is-visible');
+    } else {                        // 否则完全不显示
+      noteBox.classList.remove('is-visible');
+    }
+    syncNoteButtons();
+  }
+
+  function setNoteVisible(flag){
+    noteVisible = !!flag;
+    toggleNote();
+  }
+
+  function clearNote(){
+    noteInput.value = '';
+    noteVisible = false;            // ★ 清除后保持隐藏
+    toggleNote();
+    noteInput.focus();
+  }
+
+  /* ============ 恢复默认（金额恢复，备注恢复文案但保持隐藏） ============ */
+  var DEFAULTS = [[500, 40], [1500, 40], [4000, 40]];
+
+  function resetAll(){
+    baseInput.value = 0;
+    opts.forEach(function(o, i){
+      o.amtInput.value = DEFAULTS[i][0];
+      o.pctInput.value = DEFAULTS[i][1];
+    });
+    noteInput.value = NOTE_DEFAULT;   // 恢复默认德语备注
+    noteVisible = false;              // ★ 恢复默认后仍保持隐藏
+    toggleNote();
+    recalc();
+  }
+
+  /* ============ 视图切换（侧边导航 → 不同布局） ============ */
+  var VIEW_META = {
+    produkte:   { crumb:'Produkte finden',     sub:'Produktsuche & Artikelstammdaten' },
+    warendaten: { crumb:'Warendaten',          sub:'Gewinnaufträge & Auszahlungsbeträge' },
+    reparatur:  { crumb:'Daten zur Reparatur', sub:'Reparaturaufträge & Auszahlungsbeträge' },
+    zusaetzlich:{ crumb:'Zusätzliche Daten',   sub:'Ergänzende Datensätze & Anhänge' },
+    einrichten: { crumb:'Daten einrichten',    sub:'Stammdaten & Voreinstellungen' }
+  };
+  function switchView(name){
+    var meta = VIEW_META[name]; if(!meta) return;
+    var items = document.querySelectorAll('.submenu-item');
+    for (var i=0;i<items.length;i++){
+      var on = items[i].getAttribute('data-view') === name;
+      items[i].classList.toggle('active', on);
+      if(on){ items[i].setAttribute('aria-current','page'); }
+      else  { items[i].removeAttribute('aria-current'); }
+    }
+    var views = document.querySelectorAll('.view');
+    for (var j=0;j<views.length;j++){
+      views[j].classList.toggle('is-active', views[j].id === 'view-' + name);
+    }
+    var crumb = $('crumb-current'); if(crumb){ crumb.textContent = meta.crumb; }
+    var sub   = $('view-subtitle');  if(sub){ sub.textContent   = meta.sub; }
+    var ed = $('editor-block'); if(ed){ ed.style.display = (name === 'warendaten') ? '' : 'none'; }
+    var red = $('rep-editor-block'); if(red){ red.style.display = (name === 'reparatur') ? '' : 'none'; }
+  }
+  function bindViews(){
+    var items = document.querySelectorAll('.submenu-item[data-view]');
+    for (var i=0;i<items.length;i++){
+      (function(el){
+        el.addEventListener('click', function(){ switchView(el.getAttribute('data-view')); });
+        el.addEventListener('keydown', function(e){
+          if(e.key==='Enter' || e.key===' '){ e.preventDefault(); switchView(el.getAttribute('data-view')); }
+        });
+      })(items[i]);
+    }
+  }
+  /* ============ Reparatur 编辑器（实时联动，含原金额基数） ============ */
+  var repBase = $('rep-inp-base');
+  var repOpts = [1, 2].map(function(i){
+    return {
+      amtInput:  $('rep-inp-a' + i),
+      pctInput:  $('rep-inp-p' + i),
+      sumAmt:    $('rep-sum-amt-' + i),
+      sumPctLbl: $('rep-sum-pct-label-' + i),
+      sumProfit: $('rep-sum-profit-' + i),
+      sumTotal:  $('rep-sum-total-' + i),
+      tblAmt:    $('rep-tbl-amt-' + i),
+      tblPct:    $('rep-tbl-pct-' + i),
+      tblProfit: $('rep-tbl-profit-' + i),
+      tblTotal:  $('rep-tbl-total-' + i)
+    };
+  });
+  var REP_DEFAULTS = [[13600, 40], [23100, 60]];
+  function repRecalc(){
+    var base     = readNum(repBase);
+    var totAmt   = 0, totProfit = 0;
+    repOpts.forEach(function(o){
+      var amt    = readNum(o.amtInput);
+      var pct    = readNum(o.pctInput);
+      var profit = amt * pct / 100;
+      var total  = base + amt + profit;   // 出款 = 原金额 + 支付额 + 利润
+      totAmt    += amt;
+      totProfit += profit;
+      setText(o.sumAmt,    nfAmount.format(amt) + ' €');
+      setText(o.sumPctLbl, pct + ' % Gewinn');
+      setText(o.sumProfit, '+' + nfAmount.format(profit) + ' €');
+      setText(o.sumTotal,  nfAmount.format(total) + ' €');
+      setText(o.tblAmt,    nfMoney.format(amt) + ' €');
+      setText(o.tblPct,    pct + ' %');
+      setText(o.tblProfit, '+' + nfMoney.format(profit) + ' €');
+      setText(o.tblTotal,  nfMoney.format(total) + ' €');
+    });
+    setText($('rep-out-sum-amt'),    nfAmount.format(totAmt) + ' €');
+    setText($('rep-out-sum-profit'), '+' + nfAmount.format(totProfit) + ' €');
+    setText($('rep-out-sum-total'),  nfAmount.format(2 * base + totAmt + totProfit) + ' €');
+  }
+  function repReset(){
+    repBase.value = 0;
+    repOpts.forEach(function(o, i){
+      o.amtInput.value = REP_DEFAULTS[i][0];
+      o.pctInput.value = REP_DEFAULTS[i][1];
+    });
+    repRecalc();
+  }
+  function bindRepEvents(){
+    [repBase].concat(
+      repOpts.map(function(o){ return o.amtInput; }),
+      repOpts.map(function(o){ return o.pctInput; })
+    ).forEach(function(el){
+      el.addEventListener('input', repRecalc);
+      el.addEventListener('change', function(){
+        var v = parseFloat(el.value);
+        if (isFinite(v) && v < 0){ el.value = '0'; repRecalc(); }
+      });
+    });
+    $('rep-reset-btn').addEventListener('click', repReset);
+  }
+  /* ============ 事件绑定 ============ */
+  function bindEvents(){
+    var numericInputs = [baseInput].concat(
+      opts.map(function(o){ return o.amtInput; }),
+      opts.map(function(o){ return o.pctInput; })
+    );
+
+    numericInputs.forEach(function(el){
+      el.addEventListener('input', function(){ recalc(); });
+      /* 失焦时把非法负值归零，保证输入框与计算结果一致 */
+      el.addEventListener('change', function(){
+        var v = parseFloat(el.value);
+        if (isFinite(v) && v < 0){
+          el.value = '0';
+          recalc();
+        }
+      });
+    });
+
+    /* 备注内容输入：不改变显示/隐藏状态，仅当当前为显示时同步内容 */
+    noteInput.addEventListener('input', function(){
+      toggleNote();
+    });
+
+    $('note-clear').addEventListener('click', clearNote);
+    $('reset-btn').addEventListener('click', resetAll);
+
+    /* 显示 / 隐藏 按钮 */
+    var showBtn = $('note-show-btn');
+    var hideBtn = $('note-hide-btn');
+    if (showBtn) showBtn.addEventListener('click', function(){ setNoteVisible(true); });
+    if (hideBtn) hideBtn.addEventListener('click', function(){ setNoteVisible(false); });
+  }
+
+  /* ============ 初始化：默认隐藏备注 ============ */
+  bindEvents();
+  bindViews();
+  bindRepEvents();
+  repRecalc();
+  recalc(false);   // 首屏静默同步，不触发闪烁
+  noteVisible = false;   // ★ 默认隐藏
+  toggleNote();          // 默认不显示备注，需点击"显示"
+})();
+</script>
+
+</body>
+</html>
