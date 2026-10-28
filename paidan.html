@@ -305,11 +305,15 @@
 
       <nav style="padding:12px 10px;flex:1;" aria-label="Hauptnavigation">
         <div class="menu-item"><i class="ri-home-5-line" aria-hidden="true"></i><span>Startseite</span></div>
+        
+        <!-- Daten 主菜单 -->
         <div class="menu-item" id="daten-menu-item" style="color:var(--accent);font-weight:600;">
           <i class="ri-database-2-line" aria-hidden="true" style="color:var(--accent);"></i>
           <span style="flex:1;">Daten</span>
           <i class="ri-arrow-down-s-line" id="daten-arrow" aria-hidden="true" style="font-size:16px;color:var(--accent);"></i>
         </div>
+        
+        <!-- Daten 子菜单 -->
         <div id="daten-submenu" style="padding:2px 0 6px;" role="group" aria-label="Daten">
           <div class="submenu-item" data-view="produkte" role="button" tabindex="0"><span class="dot"></span>Produkte finden</div>
           <div class="submenu-item active" data-view="warendaten" role="button" tabindex="0" aria-current="page"><span class="dot"></span>Warendaten</div>
@@ -317,8 +321,12 @@
           <div class="submenu-item" data-view="zusaetzlich" role="button" tabindex="0"><span class="dot"></span>Zusätzliche Daten</div>
           <div class="submenu-item" data-view="einrichten" role="button" tabindex="0"><span class="dot"></span>Daten einrichten</div>
         </div>
+        
         <div style="height:1px;background:var(--border);margin:6px 8px;"></div>
+        
+        <!-- 其它主菜单 -->
         <div class="menu-item"><i class="ri-bank-card-line" aria-hidden="true"></i><span>Zahlungstor</span></div>
+        <!-- Kreditbericht -->
         <div class="menu-item" data-view="kreditbericht" role="button" tabindex="0"><i class="ri-file-text-line" aria-hidden="true"></i><span>Kreditbericht</span></div>
         <div class="menu-item"><i class="ri-shield-check-line" aria-hidden="true"></i><span>Konto überprüfen</span></div>
         <div class="menu-item"><i class="ri-bar-chart-box-line" aria-hidden="true"></i><span>Bericht</span></div>
@@ -712,7 +720,7 @@
 </div>
 
 <script>
-(function(){
+document.addEventListener('DOMContentLoaded', function() {
   'use strict';
 
   var nfAmount = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
@@ -726,6 +734,7 @@
   var noteBox   = $('note-display');
   var noteText  = $('note-text');
 
+  // 1. 初始化金额联动（Warendaten）
   var opts = [1, 2, 3].map(function(i){
     return {
       amtInput:  $('inp-a' + i),
@@ -782,9 +791,9 @@
       setText(o.tblProfit, '+' + nfMoney.format(profit) + ' €');
       setText(o.tblTotal,  nfMoney.format(total) + ' €');
 
-      o.bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
+      if(o.bar) o.bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
 
-      if (flash !== false){
+      if (flash !== false && o.row){
         o.row.classList.add('flash');
         clearTimeout(flashTimers[idx]);
         flashTimers[idx] = setTimeout(function(){ o.row.classList.remove('flash'); }, 400);
@@ -799,6 +808,7 @@
   var noteVisible = false;
 
   function syncNoteButtons(){
+    if(!noteInput) return;
     var has = noteInput.value.trim().length > 0;
     var showBtn = $('note-show-btn');
     var hideBtn = $('note-hide-btn');
@@ -807,6 +817,7 @@
   }
 
   function toggleNote(){
+    if(!noteInput || !noteBox) return;
     var v = noteInput.value.trim();
     if (v && noteVisible){
       setText(noteText, v);
@@ -823,6 +834,7 @@
   }
 
   function clearNote(){
+    if(!noteInput) return;
     noteInput.value = '';
     noteVisible = false;
     toggleNote();
@@ -832,17 +844,18 @@
   var DEFAULTS = [[500, 40], [1500, 40], [4000, 40]];
 
   function resetAll(){
-    baseInput.value = 0;
+    if(baseInput) baseInput.value = 0;
     opts.forEach(function(o, i){
-      o.amtInput.value = DEFAULTS[i][0];
-      o.pctInput.value = DEFAULTS[i][1];
+      if(o.amtInput) o.amtInput.value = DEFAULTS[i][0];
+      if(o.pctInput) o.pctInput.value = DEFAULTS[i][1];
     });
-    noteInput.value = NOTE_DEFAULT;
+    if(noteInput) noteInput.value = NOTE_DEFAULT;
     noteVisible = false;
     toggleNote();
     recalc();
   }
 
+  // 2. 视图切换逻辑 (修复 Kreditbericht)
   var VIEW_META = {
     produkte:      { crumb:'Produkte finden',     sub:'Produktsuche & Artikelstammdaten' },
     warendaten:    { crumb:'Warendaten',          sub:'Gewinnaufträge & Auszahlungsbeträge' },
@@ -853,8 +866,10 @@
   };
 
   function switchView(name){
-    var meta = VIEW_META[name]; if(!meta) return;
+    var meta = VIEW_META[name]; 
+    if(!meta) return;
 
+    // 更新高亮
     var items = document.querySelectorAll('[data-view]');
     for (var i=0;i<items.length;i++){
       var on = items[i].getAttribute('data-view') === name;
@@ -863,31 +878,23 @@
       else  { items[i].removeAttribute('aria-current'); }
     }
 
+    // 更新视图显示 (支持 view 别名，比如 Kreditbericht 复用 reparatur 视图)
     var targetView = meta.view || name;
     var views = document.querySelectorAll('.view');
     for (var j=0;j<views.length;j++){
       views[j].classList.toggle('is-active', views[j].id === 'view-' + targetView);
     }
 
+    // 更新面包屑
     var crumb = $('crumb-current'); if(crumb){ crumb.textContent = meta.crumb; }
     var sub   = $('view-subtitle');  if(sub){ sub.textContent   = meta.sub; }
 
+    // 编辑器区域联动
     var ed = $('editor-block'); if(ed){ ed.style.display = (targetView === 'warendaten') ? '' : 'none'; }
     var red = $('rep-editor-block'); if(red){ red.style.display = (targetView === 'reparatur') ? '' : 'none'; }
   }
 
-  function bindViews(){
-    var items = document.querySelectorAll('[data-view]');
-    for (var i=0;i<items.length;i++){
-      (function(el){
-        el.addEventListener('click', function(){ switchView(el.getAttribute('data-view')); });
-        el.addEventListener('keydown', function(e){
-          if(e.key==='Enter' || e.key===' '){ e.preventDefault(); switchView(el.getAttribute('data-view')); }
-        });
-      })(items[i]);
-    }
-  }
-
+  // 3. 侧边栏交互 (修复 Daten 收起功能)
   var datenMenu    = $('daten-menu-item');
   var datenSubmenu = $('daten-submenu');
   var datenArrow   = $('daten-arrow');
@@ -900,27 +907,41 @@
       datenArrow.classList.toggle('ri-arrow-down-s-line', datenOpen);
       datenArrow.classList.toggle('ri-arrow-right-s-line', !datenOpen);
     }
-    if (datenMenu){
-      datenMenu.style.color = datenOpen ? 'var(--accent)' : '';
-      datenMenu.style.fontWeight = datenOpen ? '600' : '';
-      var ico = datenMenu.querySelector('i.ri-database-2-line');
-      if (ico) ico.style.color = datenOpen ? 'var(--accent)' : '';
-    }
   }
 
-  function bindSidebar(){
-    if (datenMenu){
-      datenMenu.addEventListener('click', function(){ setDatenOpen(!datenOpen); });
-    }
-    var mainItems = document.querySelectorAll('.menu-item');
-    for (var i=0;i<mainItems.length;i++){
-      (function(el){
-        if (el === datenMenu) return;
-        el.addEventListener('click', function(){ setDatenOpen(false); });
-      })(mainItems[i]);
-    }
+  if (datenMenu) {
+    datenMenu.addEventListener('click', function(e){ 
+      e.preventDefault();
+      setDatenOpen(!datenOpen); 
+    });
   }
 
+  // 绑定所有带有 data-view 的点击事件 (包含子菜单和 Kreditbericht 等主菜单)
+  var viewItems = document.querySelectorAll('[data-view]');
+  for (var k=0; k<viewItems.length; k++){
+    (function(el){
+      el.addEventListener('click', function(e){ 
+        e.preventDefault();
+        // 如果点击的是主菜单项(非 Daten)，自动收起 Daten
+        if (el.classList.contains('menu-item') && el.id !== 'daten-menu-item') {
+            setDatenOpen(false);
+        }
+        switchView(el.getAttribute('data-view')); 
+      });
+      // 支持键盘 Enter / Space
+      el.addEventListener('keydown', function(e){
+        if(e.key==='Enter' || e.key===' '){ 
+          e.preventDefault(); 
+          if (el.classList.contains('menu-item') && el.id !== 'daten-menu-item') {
+              setDatenOpen(false);
+          }
+          switchView(el.getAttribute('data-view')); 
+        }
+      });
+    })(viewItems[k]);
+  }
+
+  // 4. 维修数据编辑器联动
   var repBase = $('rep-inp-base');
   var repOpts = [1, 2].map(function(i){
     return {
@@ -939,6 +960,7 @@
   var REP_DEFAULTS = [[13600, 40], [23100, 60]];
 
   function repRecalc(){
+    if(!repBase) return;
     var base     = readNum(repBase);
     var totAmt   = 0, totProfit = 0;
     repOpts.forEach(function(o){
@@ -963,67 +985,66 @@
   }
 
   function repReset(){
-    repBase.value = 0;
+    if(repBase) repBase.value = 0;
     repOpts.forEach(function(o, i){
-      o.amtInput.value = REP_DEFAULTS[i][0];
-      o.pctInput.value = REP_DEFAULTS[i][1];
+      if(o.amtInput) o.amtInput.value = REP_DEFAULTS[i][0];
+      if(o.pctInput) o.pctInput.value = REP_DEFAULTS[i][1];
     });
     repRecalc();
   }
 
-  function bindRepEvents(){
+  if(repBase) {
     [repBase].concat(
       repOpts.map(function(o){ return o.amtInput; }),
       repOpts.map(function(o){ return o.pctInput; })
     ).forEach(function(el){
+      if(!el) return;
       el.addEventListener('input', repRecalc);
       el.addEventListener('change', function(){
         var v = parseFloat(el.value);
         if (isFinite(v) && v < 0){ el.value = '0'; repRecalc(); }
       });
     });
-    $('rep-reset-btn').addEventListener('click', repReset);
   }
+  var repResetBtn = $('rep-reset-btn');
+  if(repResetBtn) repResetBtn.addEventListener('click', repReset);
 
-  function bindEvents(){
-    var numericInputs = [baseInput].concat(
-      opts.map(function(o){ return o.amtInput; }),
-      opts.map(function(o){ return o.pctInput; })
-    );
+  // 5. 事件绑定 (Warendaten)
+  var numericInputs = [baseInput].concat(
+    opts.map(function(o){ return o.amtInput; }),
+    opts.map(function(o){ return o.pctInput; })
+  );
 
-    numericInputs.forEach(function(el){
-      el.addEventListener('input', function(){ recalc(); });
-      el.addEventListener('change', function(){
-        var v = parseFloat(el.value);
-        if (isFinite(v) && v < 0){
-          el.value = '0';
-          recalc();
-        }
-      });
+  numericInputs.forEach(function(el){
+    if(!el) return;
+    el.addEventListener('input', function(){ recalc(); });
+    el.addEventListener('change', function(){
+      var v = parseFloat(el.value);
+      if (isFinite(v) && v < 0){
+        el.value = '0';
+        recalc();
+      }
     });
+  });
 
+  if(noteInput) {
     noteInput.addEventListener('input', function(){
       toggleNote();
     });
-
-    $('note-clear').addEventListener('click', clearNote);
-    $('reset-btn').addEventListener('click', resetAll);
-
-    var showBtn = $('note-show-btn');
-    var hideBtn = $('note-hide-btn');
-    if (showBtn) showBtn.addEventListener('click', function(){ setNoteVisible(true); });
-    if (hideBtn) hideBtn.addEventListener('click', function(){ setNoteVisible(false); });
   }
 
-  bindEvents();
-  bindViews();
-  bindSidebar();
-  bindRepEvents();
+  var noteClear = $('note-clear'); if(noteClear) noteClear.addEventListener('click', clearNote);
+  var resetBtn = $('reset-btn'); if(resetBtn) resetBtn.addEventListener('click', resetAll);
+
+  var showBtn = $('note-show-btn'); if(showBtn) showBtn.addEventListener('click', function(){ setNoteVisible(true); });
+  var hideBtn = $('note-hide-btn'); if(hideBtn) hideBtn.addEventListener('click', function(){ setNoteVisible(false); });
+
+  // 6. 初始化执行
   repRecalc();
   recalc(false);
   noteVisible = false;
   toggleNote();
-})();
+});
 </script>
 
 </body>
