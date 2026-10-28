@@ -20,7 +20,6 @@
     --border:rgba(22,32,51,.10);
   }
 
-  /* ——— Basis / Reset ——— */
   *,*::before,*::after{box-sizing:border-box;}
   html{margin:0;padding:0;}
   body{
@@ -33,7 +32,6 @@
   button,input,select,textarea{font-family:inherit;font-size:100%;line-height:inherit;}
   button{cursor:pointer;}
 
-  /* ——— 轻量级工具类（替代 Tailwind CDN，零闪烁、离线可用） ——— */
   .flex{display:flex;}
   .flex-wrap{flex-wrap:wrap;}
   .items-center{align-items:center;}
@@ -42,7 +40,6 @@
   .gap-3{gap:12px;}
   .gap-4{gap:16px;}
 
-  /* ——— 布局 ——— */
   .shell{
     max-width:1180px; margin:0 auto; background:#fff;
     border:1px solid var(--border); border-radius:18px;
@@ -56,11 +53,9 @@
   }
   .main{flex:1; min-width:300px; padding:26px; background:#f7f9fc;}
 
-  /* ——— Typografie / 通用 ——— */
   .font-display{font-family:'Spectral',serif;}
   .num{font-variant-numeric:tabular-nums;}
 
-  /* ——— 侧边导航 ——— */
   .menu-item{
     display:flex; align-items:center; gap:12px; padding:10px 16px;
     font-size:13.5px; font-weight:500; color:#3a4760;
@@ -96,7 +91,6 @@
   }
   .logout-btn:hover{border-color:var(--accent); color:var(--accent); background:var(--accent-soft);}
 
-  /* ——— 数据表格 ——— */
   .table-wrap{overflow-x:auto; -webkit-overflow-scrolling:touch;}
   .data-table{width:100%; min-width:620px; border-collapse:collapse; font-size:13.5px;}
   .data-table thead th{
@@ -138,7 +132,6 @@
     border-radius:3px; transition:width .3s;
   }
 
-  /* ——— 概览卡片 ——— */
   .sum-card{
     flex:1; min-width:170px; background:#fff;
     border:1px solid var(--border); border-radius:12px;
@@ -164,7 +157,6 @@
     border:1px solid rgba(13,122,95,.3);
   }
 
-  /* ——— 编辑器控件 ——— */
   .calc-input{
     padding:9px 12px; border:1.5px solid #d7dee8; border-radius:9px;
     font-size:14px; font-weight:600; color:var(--text);
@@ -199,7 +191,6 @@
   }
   .reset-btn:hover{border-color:#dc2626; color:#dc2626; background:rgba(220,38,38,.06);}
 
-  /* ——— 备注区 ——— */
   .note-display{
     display:none; margin-top:18px;
     background:#fffbeb; border:1px solid #f3e3a8;
@@ -224,7 +215,6 @@
   .note-input-editor:focus{border-color:#b8860b; box-shadow:0 0 0 3px rgba(184,134,11,.12);}
   .note-input-editor::placeholder{color:#a0aabc;}
 
-  /* ——— 备注显示/隐藏按钮 ——— */
   .note-toggle-btn{
     display:inline-flex; align-items:center; gap:6px;
     padding:7px 16px; border-radius:8px;
@@ -235,40 +225,11 @@
   .note-toggle-btn:hover{border-color:#b8860b; color:#8a6508; background:var(--accent2-soft);}
   .note-toggle-btn.is-active{border-color:#b8860b; background:var(--accent2-soft); color:#8a6508; box-shadow:0 0 0 3px rgba(184,134,11,.10);}
 
-  /* ——— 视图切换（多布局） ——— */
   .view{display:none;}
   .view.is-active{display:block; animation:fadeUp .45s ease both;}
   .submenu-item{user-select:none;}
   .submenu-item:focus-visible{outline:2px solid var(--accent); outline-offset:2px;}
-  .rep-kpis{display:grid; grid-template-columns:repeat(auto-fit,minmax(140px,1fr)); gap:12px; margin-bottom:18px;}
-  .rep-kpi{background:#fff; border:1px solid var(--border); border-radius:12px; padding:14px 16px;}
-  .rep-kpi .k{font-size:11.5px; color:var(--muted); font-weight:600; letter-spacing:.02em;}
-  .rep-kpi .v{font-size:22px; font-weight:700; margin-top:4px; font-variant-numeric:tabular-nums;}
-  .rep-kpi .v.ok{color:var(--success);} .rep-kpi .v.warn{color:#b8860b;} .rep-kpi .v.bad{color:#b91c1c;}
-  .rep-grid{display:grid; grid-template-columns:minmax(280px,380px) 1fr; gap:18px; align-items:start;}
-  @media (max-width:860px){ .rep-grid{grid-template-columns:1fr;} }
-  .rep-form-card, .rep-list-card{background:#fff; border:1px solid var(--border); border-radius:14px; padding:18px 20px;}
-  .rep-field{margin-bottom:14px;}
-  .rep-field label{display:block; font-size:11.5px; font-weight:600; color:var(--muted); margin-bottom:5px;}
-  .rep-field input, .rep-field select, .rep-field textarea{width:100%; padding:9px 12px; border:1.5px solid #d7dee8; border-radius:9px; font-size:13.5px; color:var(--text); outline:none; background:#fff; font-family:inherit; transition:border-color .15s,box-shadow .15s;}
-  .rep-field textarea{resize:vertical; min-height:76px;}
-  .rep-field input:focus, .rep-field select:focus, .rep-field textarea:focus{border-color:var(--accent); box-shadow:0 0 0 3px var(--accent-soft);}
-  .rep-submit{width:100%; padding:11px; border:none; border-radius:9px; background:linear-gradient(135deg,#0b3d91,#1453b8); color:#fff; font-weight:700; font-size:14px; transition:opacity .15s, transform .1s; cursor:pointer;}
-  .rep-submit:hover{opacity:.92;} .rep-submit:active{transform:translateY(1px);}
-  .rep-ticket{display:flex; gap:14px; padding:14px 0; border-bottom:1px solid var(--border); align-items:flex-start;}
-  .rep-ticket:last-child{border-bottom:none; padding-bottom:0;}
-  .rep-ticket .t-id{font-family:'Spectral',serif; font-weight:700; color:var(--accent); font-size:15px; min-width:92px;}
-  .rep-ticket .t-meta{flex:1; min-width:0;}
-  .rep-ticket .t-title{font-weight:600; font-size:13.5px; margin-bottom:3px;}
-  .rep-ticket .t-sub{font-size:12px; color:var(--muted);}
-  .status-pill{display:inline-flex; align-items:center; gap:5px; padding:3px 10px; border-radius:20px; font-size:11px; font-weight:700; white-space:nowrap;}
-  .st-offen{background:rgba(220,38,38,.08); color:#b91c1c; border:1px solid rgba(220,38,38,.25);}
-  .st-arbeit{background:var(--accent2-soft); color:#8a6508; border:1px solid rgba(184,134,11,.3);}
-  .st-done{background:var(--success-soft); color:#0d7a5f; border:1px solid rgba(13,122,95,.3);}
-  .ph-card{background:#fff; border:1px dashed #c4ccd8; border-radius:14px; padding:48px 24px; text-align:center; color:var(--muted);}
-  .ph-card i{font-size:36px; color:#c4ccd8; margin-bottom:10px; display:block;}
-  .ph-card strong{display:block; color:var(--text); font-size:16px; margin-bottom:4px;}
-  /* ——— Reparatur 视图：红色主题布局 ——— */
+
   .rep-cards{display:flex;flex-wrap:wrap;gap:12px;margin-bottom:18px;}
   .rep-card{flex:1;min-width:240px;background:#fff;border:1px solid #e8c4c4;border-radius:12px;padding:16px 18px;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s;}
   .rep-card:hover{transform:translateY(-3px);box-shadow:0 10px 24px rgba(139,26,26,.10);}
@@ -290,15 +251,16 @@
   .rep-note{background:linear-gradient(135deg,#8b1a1a,#a31f1f);color:#fff;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.65;display:flex;gap:10px;align-items:flex-start;}
   .rep-note i{flex-shrink:0;font-size:18px;margin-top:2px;}
   .rep-note strong{font-weight:700;}
+  .ph-card{background:#fff; border:1px dashed #c4ccd8; border-radius:14px; padding:48px 24px; text-align:center; color:var(--muted);}
+  .ph-card i{font-size:36px; color:#c4ccd8; margin-bottom:10px; display:block;}
+  .ph-card strong{display:block; color:var(--text); font-size:16px; margin-bottom:4px;}
+
   @keyframes noteIn{from{opacity:0;transform:translateY(-6px);} to{opacity:1;transform:translateY(0);}}
   @keyframes fadeUp{from{opacity:0;transform:translateY(10px);} to{opacity:1;transform:translateY(0);}}
   .reveal{animation:fadeUp .5s ease both;}
   .d1{animation-delay:.05s}
-  .d2{animation-delay:.12s}
-  .d3{animation-delay:.2s}
   .d4{animation-delay:.3s}
 
-  /* ——— 响应式 ——— */
   @media (max-width:760px){
     body{padding:14px 10px;}
     .shell{border-radius:14px;}
@@ -307,7 +269,6 @@
     .note-display{margin-top:14px;}
   }
 
-  /* ——— 降低动效偏好 ——— */
   @media (prefers-reduced-motion: reduce){
     *{animation-duration:.001ms !important; animation-iteration-count:1 !important; transition-duration:.001ms !important;}
   }
@@ -316,11 +277,10 @@
 
 <body>
 
-<!-- ============ 框一：主数据框（全德语） ============ -->
 <div class="shell reveal d1">
   <div class="shell-body">
 
-    <!-- 左侧导航 -->
+    <!-- 侧边导航 -->
     <aside class="sidebar">
       <div style="background:linear-gradient(135deg,#0b3d91 0%,#1453b8 100%);padding:18px;display:flex;align-items:center;gap:11px;position:relative;overflow:hidden;">
         <div style="position:absolute;right:-20px;top:-20px;width:80px;height:80px;border-radius:50%;background:radial-gradient(circle,rgba(247,201,72,.22),transparent 70%);"></div>
@@ -374,7 +334,7 @@
       </div>
     </aside>
 
-    <!-- 右侧主内容（全德语） -->
+    <!-- 主内容 -->
     <main class="main">
       <div style="margin-bottom:18px;">
         <div style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);margin-bottom:8px;">
@@ -392,7 +352,6 @@
       </div>
 
       <section id="view-warendaten" class="view is-active">
-      <!-- 选项概览 -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:14px;padding:18px 20px;margin-bottom:18px;">
         <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px;flex-wrap:wrap;">
           <i class="ri-list-check-2" aria-hidden="true" style="color:var(--accent);font-size:18px;"></i>
@@ -440,7 +399,6 @@
         </div>
       </div>
 
-      <!-- 数据表格（德语） -->
       <div style="background:#fff;border:1px solid var(--border);border-radius:14px;overflow:hidden;">
         <div style="padding:15px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;">
           <div>
@@ -494,7 +452,6 @@
         </div>
       </div>
 
-      <!-- 备注展示区：默认隐藏，需点击"显示"按钮 -->
       <div class="note-display" id="note-display" role="status" aria-live="polite">
         <i class="ri-sticky-note-fill" aria-hidden="true" style="color:#b8860b;font-size:18px;flex-shrink:0;"></i>
         <div id="note-text" style="flex:1;font-size:13.5px;color:#5a4a1a;line-height:1.6;word-break:break-word;"></div>
@@ -504,16 +461,13 @@
       </div>
       </section>
 
-      <!-- ===== 视图：Daten zur Reparatur（红色主题，数字带 id 供编辑器联动） ===== -->
       <section id="view-reparatur" class="view">
-        <!-- 标题条 -->
         <div style="background:#fff;border:1px solid #e8c4c4;border-radius:14px;padding:16px 20px;margin-bottom:18px;">
           <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
             <i class="ri-tools-line" aria-hidden="true" style="color:#a31f1f;font-size:18px;"></i>
             <span style="font-weight:700;font-size:15px;">Reparatur-Optionen</span>
           </div>
         </div>
-        <!-- 两张概览卡 -->
         <div class="rep-cards">
           <div class="rep-card">
             <div class="rc-head">
@@ -540,7 +494,6 @@
             </div>
           </div>
         </div>
-        <!-- 数据表（红色主题） -->
         <div class="rep-table-wrap">
           <table class="rep-table">
             <thead>
@@ -573,7 +526,6 @@
             </tbody>
           </table>
         </div>
-        <!-- 底部说明条 -->
         <div class="rep-note">
           <i class="ri-information-line" aria-hidden="true"></i>
           <div><strong>Option 1:</strong> Das System weist Ihnen zufällig 1–2 Reparaturaufträge zu. Nach Abschluss der Reparaturlösungen erfolgt die gemeinsame Auszahlung. &nbsp; <strong>Option 2:</strong> Intelligente KI-Lösung: Sofortige Auszahlung, keinerlei Bedienung erforderlich.</div>
@@ -593,7 +545,7 @@
   </div>
 </div>
 
-<!-- 分隔提示（德语） -->
+<!-- 金额编辑器 -->
 <div id="editor-block">
 <div style="max-width:1180px;margin:22px auto 14px;display:flex;align-items:center;gap:12px;">
   <div style="flex:1;height:1px;background:var(--border);"></div>
@@ -603,7 +555,6 @@
   <div style="flex:1;height:1px;background:var(--border);"></div>
 </div>
 
-<!-- ============ 框二：金额编辑器（保留中文，新增原金额） ============ -->
 <div class="reveal d4" style="max-width:1180px;margin:0 auto;background:#ffffff;border:1.5px solid #0d7a5f;border-radius:18px;box-shadow:0 8px 28px rgba(13,122,95,.10);overflow:hidden;">
   <div style="background:linear-gradient(135deg,#0d7a5f,#0f9978);padding:16px 22px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
     <i class="ri-calculator-line" aria-hidden="true" style="color:#fff;font-size:20px;"></i>
@@ -614,7 +565,6 @@
   </div>
 
   <div style="padding:22px;">
-    <!-- 原金额（统一基数，每档总金额均包含） -->
     <div style="margin-bottom:16px;padding:12px 16px;background:#fffbeb;border:1px dashed #e0c97a;border-radius:10px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">
       <i class="ri-coins-line" aria-hidden="true" style="color:#b8860b;font-size:20px;"></i>
       <label for="inp-base" style="font-size:13px;font-weight:700;color:#8a6508;">原金额（统一基数）</label>
@@ -622,7 +572,6 @@
       <span style="font-size:11.5px;color:#a08a4a;">每档总金额 = 原金额 + 预付 + 利润　|　例：原金额200 + 预付500 + 利润200 = 总金额900</span>
     </div>
 
-    <!-- 三档金额 + 利润率 -->
     <div class="flex flex-wrap gap-3" style="margin-bottom:16px;">
       <div class="opt-edit-col" style="border-top:3px solid #1d63d8;">
         <div style="display:flex;align-items:center;gap:7px;margin-bottom:12px;">
@@ -658,7 +607,6 @@
       </div>
     </div>
 
-    <!-- 汇总 -->
     <div class="flex flex-wrap gap-4 items-end">
       <div class="result-box" style="flex:2;min-width:280px;display:flex;gap:16px;align-items:center;flex-wrap:wrap;">
         <div style="flex:1;min-width:80px;">
@@ -679,7 +627,6 @@
       <button type="button" class="reset-btn" id="reset-btn"><i class="ri-refresh-line" aria-hidden="true"></i>恢复默认</button>
     </div>
 
-    <!-- 备注输入框（中文，编辑入口；默认隐藏，点击"显示"才展示） -->
     <div style="margin-top:16px;">
       <label for="note-input" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;flex-wrap:wrap;">
         <i class="ri-sticky-note-line" aria-hidden="true" style="color:#b8860b;font-size:15px;"></i>备注
@@ -695,8 +642,9 @@
     </div>
   </div>
 </div>
-
 </div>
+
+<!-- 维修数据编辑器 -->
 <div id="rep-editor-block" style="display:none;">
 <div style="max-width:1180px;margin:22px auto 14px;display:flex;align-items:center;gap:12px;">
   <div style="flex:1;height:1px;background:var(--border);"></div>
@@ -714,7 +662,6 @@
     </span>
   </div>
   <div style="padding:20px 22px;">
-    <!-- 原金额（统一基数） -->
     <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap;background:#fffbeb;border:1px solid #f3e3a8;border-radius:10px;padding:12px 16px;margin-bottom:16px;">
       <i class="ri-coins-line" aria-hidden="true" style="color:#b8860b;font-size:18px;"></i>
       <label for="rep-inp-base" style="font-size:12.5px;font-weight:700;color:#8a6508;white-space:nowrap;">原金额（统一基数）</label>
@@ -768,16 +715,12 @@
 (function(){
   'use strict';
 
-  /* ============ 数字格式化（缓存 Intl 实例，性能更佳） ============ */
   var nfAmount = new Intl.NumberFormat('de-DE', { maximumFractionDigits: 2 });
   var nfMoney  = new Intl.NumberFormat('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-
   var $ = function(id){ return document.getElementById(id); };
 
-  /* ============ 备注默认文案 ============ */
   var NOTE_DEFAULT = 'Diese Daten sind die letzte Bestellung für die Abhebung von Geldern. Nach Abschluss der Bestellung für die Abnahme von Geldern wird diese vorgezahlte Aufgabe abgeschlossen. Nach Abschluss der Aufgabe kontaktieren Sie die Finanzabteilung, um alle grundlegenden Mittel und Provisionen für diese vorgezahlte Aufgabe abzutragen. Wir wünschen Ihnen ein glückliches Leben!';
 
-  /* ============ 元素引用（一次性缓存） ============ */
   var baseInput = $('inp-base');
   var noteInput = $('note-input');
   var noteBox   = $('note-display');
@@ -804,7 +747,6 @@
   var outSumProfit = $('out-sum-profit');
   var outSumTotal  = $('out-sum-total');
 
-  /* ============ 工具函数 ============ */
   function readNum(el){
     var v = parseFloat(el.value);
     return isFinite(v) ? v : 0;
@@ -816,7 +758,6 @@
 
   var flashTimers = [];
 
-  /* ============ 核心计算 & 渲染 ============ */
   function recalc(flash){
     var base      = readNum(baseInput);
     var totAmt    = 0;
@@ -826,27 +767,23 @@
       var amt    = readNum(o.amtInput);
       var pct    = readNum(o.pctInput);
       var profit = amt * pct / 100;
-      var total  = base + amt + profit;   // 总金额 = 原金额 + 预付 + 利润
+      var total  = base + amt + profit;
 
       totAmt    += amt;
       totProfit += profit;
 
-      /* 概览卡片（德式短格式） */
       setText(o.sumAmt,    nfAmount.format(amt) + ' €');
       setText(o.sumPctLbl, pct + ' % Gewinn');
       setText(o.sumProfit, '+' + nfAmount.format(profit) + ' €');
       setText(o.sumTotal,  nfAmount.format(total) + ' €');
 
-      /* 数据表格（德式两位小数） */
       setText(o.tblAmt,    nfMoney.format(amt) + ' €');
       setText(o.tblPct,    pct + ' %');
       setText(o.tblProfit, '+' + nfMoney.format(profit) + ' €');
       setText(o.tblTotal,  nfMoney.format(total) + ' €');
 
-      /* 百分比进度条（安全钳位 0–100） */
       o.bar.style.width = Math.min(Math.max(pct, 0), 100) + '%';
 
-      /* 行高亮闪烁（清理旧定时器，避免堆叠） */
       if (flash !== false){
         o.row.classList.add('flash');
         clearTimeout(flashTimers[idx]);
@@ -856,12 +793,10 @@
 
     setText(outSumAmt,    nfAmount.format(totAmt) + ' €');
     setText(outSumProfit, '+' + nfAmount.format(totProfit) + ' €');
-    /* 总总计 = 3×原金额 + 总预付 + 总利润（每档都含原金额） */
     setText(outSumTotal,  nfAmount.format(3 * base + totAmt + totProfit) + ' €');
   }
 
-  /* ============ 备注：默认隐藏，需手动点击"显示" ============ */
-  var noteVisible = false;   // ★ 默认隐藏
+  var noteVisible = false;
 
   function syncNoteButtons(){
     var has = noteInput.value.trim().length > 0;
@@ -873,10 +808,10 @@
 
   function toggleNote(){
     var v = noteInput.value.trim();
-    if (v && noteVisible){          // 有内容 且 开关打开 → 显示
+    if (v && noteVisible){
       setText(noteText, v);
       noteBox.classList.add('is-visible');
-    } else {                        // 否则完全不显示
+    } else {
       noteBox.classList.remove('is-visible');
     }
     syncNoteButtons();
@@ -889,12 +824,11 @@
 
   function clearNote(){
     noteInput.value = '';
-    noteVisible = false;            // ★ 清除后保持隐藏
+    noteVisible = false;
     toggleNote();
     noteInput.focus();
   }
 
-  /* ============ 恢复默认（金额恢复，备注恢复文案但保持隐藏） ============ */
   var DEFAULTS = [[500, 40], [1500, 40], [4000, 40]];
 
   function resetAll(){
@@ -903,18 +837,16 @@
       o.amtInput.value = DEFAULTS[i][0];
       o.pctInput.value = DEFAULTS[i][1];
     });
-    noteInput.value = NOTE_DEFAULT;   // 恢复默认德语备注
-    noteVisible = false;              // ★ 恢复默认后仍保持隐藏
+    noteInput.value = NOTE_DEFAULT;
+    noteVisible = false;
     toggleNote();
     recalc();
   }
 
-  /* ============ 视图切换（侧边导航 → 不同布局） ============ */
   var VIEW_META = {
     produkte:      { crumb:'Produkte finden',     sub:'Produktsuche & Artikelstammdaten' },
     warendaten:    { crumb:'Warendaten',          sub:'Gewinnaufträge & Auszahlungsbeträge' },
     reparatur:     { crumb:'Daten zur Reparatur', sub:'Reparaturaufträge & Auszahlungsbeträge' },
-    /* ★ Kreditbericht 复用 Reparatur 视图（复制粘贴的数据与格式） */
     kreditbericht: { crumb:'Kreditbericht',       sub:'Reparaturaufträge & Auszahlungsbeträge', view:'reparatur' },
     zusaetzlich:   { crumb:'Zusätzliche Daten',   sub:'Ergänzende Datensätze & Anhänge' },
     einrichten:    { crumb:'Daten einrichten',    sub:'Stammdaten & Voreinstellungen' }
@@ -923,7 +855,6 @@
   function switchView(name){
     var meta = VIEW_META[name]; if(!meta) return;
 
-    /* 所有带 data-view 的导航项统一高亮处理（子菜单项 + 主菜单项） */
     var items = document.querySelectorAll('[data-view]');
     for (var i=0;i<items.length;i++){
       var on = items[i].getAttribute('data-view') === name;
@@ -932,7 +863,6 @@
       else  { items[i].removeAttribute('aria-current'); }
     }
 
-    /* ★ 视图定位支持“别名”：kreditbericht → view-reparatur */
     var targetView = meta.view || name;
     var views = document.querySelectorAll('.view');
     for (var j=0;j<views.length;j++){
@@ -942,13 +872,11 @@
     var crumb = $('crumb-current'); if(crumb){ crumb.textContent = meta.crumb; }
     var sub   = $('view-subtitle');  if(sub){ sub.textContent   = meta.sub; }
 
-    /* 编辑器区域跟随目标视图 */
     var ed = $('editor-block'); if(ed){ ed.style.display = (targetView === 'warendaten') ? '' : 'none'; }
     var red = $('rep-editor-block'); if(red){ red.style.display = (targetView === 'reparatur') ? '' : 'none'; }
   }
 
   function bindViews(){
-    /* ★ 同时绑定子菜单项与主菜单项（Kreditbericht） */
     var items = document.querySelectorAll('[data-view]');
     for (var i=0;i<items.length;i++){
       (function(el){
@@ -960,7 +888,6 @@
     }
   }
 
-  /* ============ 侧边栏：Daten 子菜单展开 / 收起 ============ */
   var datenMenu    = $('daten-menu-item');
   var datenSubmenu = $('daten-submenu');
   var datenArrow   = $('daten-arrow');
@@ -985,7 +912,6 @@
     if (datenMenu){
       datenMenu.addEventListener('click', function(){ setDatenOpen(!datenOpen); });
     }
-    /* 点击除 Daten 以外的任何主菜单项，都收起 Daten 子菜单 */
     var mainItems = document.querySelectorAll('.menu-item');
     for (var i=0;i<mainItems.length;i++){
       (function(el){
@@ -995,7 +921,6 @@
     }
   }
 
-  /* ============ Reparatur 编辑器（实时联动，含原金额基数） ============ */
   var repBase = $('rep-inp-base');
   var repOpts = [1, 2].map(function(i){
     return {
@@ -1012,6 +937,7 @@
     };
   });
   var REP_DEFAULTS = [[13600, 40], [23100, 60]];
+
   function repRecalc(){
     var base     = readNum(repBase);
     var totAmt   = 0, totProfit = 0;
@@ -1019,7 +945,7 @@
       var amt    = readNum(o.amtInput);
       var pct    = readNum(o.pctInput);
       var profit = amt * pct / 100;
-      var total  = base + amt + profit;   // 出款 = 原金额 + 支付额 + 利润
+      var total  = base + amt + profit;
       totAmt    += amt;
       totProfit += profit;
       setText(o.sumAmt,    nfAmount.format(amt) + ' €');
@@ -1035,6 +961,7 @@
     setText($('rep-out-sum-profit'), '+' + nfAmount.format(totProfit) + ' €');
     setText($('rep-out-sum-total'),  nfAmount.format(2 * base + totAmt + totProfit) + ' €');
   }
+
   function repReset(){
     repBase.value = 0;
     repOpts.forEach(function(o, i){
@@ -1043,6 +970,7 @@
     });
     repRecalc();
   }
+
   function bindRepEvents(){
     [repBase].concat(
       repOpts.map(function(o){ return o.amtInput; }),
@@ -1057,7 +985,6 @@
     $('rep-reset-btn').addEventListener('click', repReset);
   }
 
-  /* ============ 事件绑定 ============ */
   function bindEvents(){
     var numericInputs = [baseInput].concat(
       opts.map(function(o){ return o.amtInput; }),
@@ -1066,7 +993,6 @@
 
     numericInputs.forEach(function(el){
       el.addEventListener('input', function(){ recalc(); });
-      /* 失焦时把非法负值归零，保证输入框与计算结果一致 */
       el.addEventListener('change', function(){
         var v = parseFloat(el.value);
         if (isFinite(v) && v < 0){
@@ -1076,7 +1002,6 @@
       });
     });
 
-    /* 备注内容输入：不改变显示/隐藏状态，仅当当前为显示时同步内容 */
     noteInput.addEventListener('input', function(){
       toggleNote();
     });
@@ -1084,22 +1009,20 @@
     $('note-clear').addEventListener('click', clearNote);
     $('reset-btn').addEventListener('click', resetAll);
 
-    /* 显示 / 隐藏 按钮 */
     var showBtn = $('note-show-btn');
     var hideBtn = $('note-hide-btn');
     if (showBtn) showBtn.addEventListener('click', function(){ setNoteVisible(true); });
     if (hideBtn) hideBtn.addEventListener('click', function(){ setNoteVisible(false); });
   }
 
-  /* ============ 初始化 ============ */
   bindEvents();
   bindViews();
-  bindSidebar();   /* ★ 侧边栏展开/收起 */
+  bindSidebar();
   bindRepEvents();
   repRecalc();
-  recalc(false);   // 首屏静默同步，不触发闪烁
-  noteVisible = false;   // ★ 默认隐藏
-  toggleNote();          // 默认不显示备注，需点击"显示"
+  recalc(false);
+  noteVisible = false;
+  toggleNote();
 })();
 </script>
 
