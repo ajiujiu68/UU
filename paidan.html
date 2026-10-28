@@ -70,6 +70,8 @@
   .menu-item:hover{background:#f1f4f9; color:var(--accent);}
   .menu-item i{font-size:18px; color:#7a879c; width:20px; text-align:center;}
   .menu-item:hover i{color:var(--accent);}
+  .menu-item.active{background:var(--accent-soft); color:var(--accent); font-weight:600;}
+  .menu-item.active i{color:var(--accent);}
 
   .submenu-item{
     display:flex; align-items:center; gap:9px;
@@ -343,12 +345,12 @@
 
       <nav style="padding:12px 10px;flex:1;" aria-label="Hauptnavigation">
         <div class="menu-item"><i class="ri-home-5-line" aria-hidden="true"></i><span>Startseite</span></div>
-        <div class="menu-item" style="color:var(--accent);font-weight:600;">
+        <div class="menu-item" id="daten-menu-item" style="color:var(--accent);font-weight:600;">
           <i class="ri-database-2-line" aria-hidden="true" style="color:var(--accent);"></i>
           <span style="flex:1;">Daten</span>
-          <i class="ri-arrow-down-s-line" aria-hidden="true" style="font-size:16px;color:var(--accent);"></i>
+          <i class="ri-arrow-down-s-line" id="daten-arrow" aria-hidden="true" style="font-size:16px;color:var(--accent);"></i>
         </div>
-        <div style="padding:2px 0 6px;" role="group" aria-label="Daten">
+        <div id="daten-submenu" style="padding:2px 0 6px;" role="group" aria-label="Daten">
           <div class="submenu-item" data-view="produkte" role="button" tabindex="0"><span class="dot"></span>Produkte finden</div>
           <div class="submenu-item active" data-view="warendaten" role="button" tabindex="0" aria-current="page"><span class="dot"></span>Warendaten</div>
           <div class="submenu-item" data-view="reparatur" role="button" tabindex="0"><span class="dot"></span>Daten zur Reparatur</div>
@@ -357,7 +359,7 @@
         </div>
         <div style="height:1px;background:var(--border);margin:6px 8px;"></div>
         <div class="menu-item"><i class="ri-bank-card-line" aria-hidden="true"></i><span>Zahlungstor</span></div>
-        <div class="menu-item"><i class="ri-file-text-line" aria-hidden="true"></i><span>Kreditbericht</span></div>
+        <div class="menu-item" data-view="kreditbericht" role="button" tabindex="0"><i class="ri-file-text-line" aria-hidden="true"></i><span>Kreditbericht</span></div>
         <div class="menu-item"><i class="ri-shield-check-line" aria-hidden="true"></i><span>Konto überprüfen</span></div>
         <div class="menu-item"><i class="ri-bar-chart-box-line" aria-hidden="true"></i><span>Bericht</span></div>
         <div class="menu-item"><i class="ri-notification-3-line" aria-hidden="true"></i><span>Melden</span></div>
@@ -909,32 +911,45 @@
 
   /* ============ 视图切换（侧边导航 → 不同布局） ============ */
   var VIEW_META = {
-    produkte:   { crumb:'Produkte finden',     sub:'Produktsuche & Artikelstammdaten' },
-    warendaten: { crumb:'Warendaten',          sub:'Gewinnaufträge & Auszahlungsbeträge' },
-    reparatur:  { crumb:'Daten zur Reparatur', sub:'Reparaturaufträge & Auszahlungsbeträge' },
-    zusaetzlich:{ crumb:'Zusätzliche Daten',   sub:'Ergänzende Datensätze & Anhänge' },
-    einrichten: { crumb:'Daten einrichten',    sub:'Stammdaten & Voreinstellungen' }
+    produkte:      { crumb:'Produkte finden',     sub:'Produktsuche & Artikelstammdaten' },
+    warendaten:    { crumb:'Warendaten',          sub:'Gewinnaufträge & Auszahlungsbeträge' },
+    reparatur:     { crumb:'Daten zur Reparatur', sub:'Reparaturaufträge & Auszahlungsbeträge' },
+    /* ★ Kreditbericht 复用 Reparatur 视图（复制粘贴的数据与格式） */
+    kreditbericht: { crumb:'Kreditbericht',       sub:'Reparaturaufträge & Auszahlungsbeträge', view:'reparatur' },
+    zusaetzlich:   { crumb:'Zusätzliche Daten',   sub:'Ergänzende Datensätze & Anhänge' },
+    einrichten:    { crumb:'Daten einrichten',    sub:'Stammdaten & Voreinstellungen' }
   };
+
   function switchView(name){
     var meta = VIEW_META[name]; if(!meta) return;
-    var items = document.querySelectorAll('.submenu-item');
+
+    /* 所有带 data-view 的导航项统一高亮处理（子菜单项 + 主菜单项） */
+    var items = document.querySelectorAll('[data-view]');
     for (var i=0;i<items.length;i++){
       var on = items[i].getAttribute('data-view') === name;
       items[i].classList.toggle('active', on);
       if(on){ items[i].setAttribute('aria-current','page'); }
       else  { items[i].removeAttribute('aria-current'); }
     }
+
+    /* ★ 视图定位支持“别名”：kreditbericht → view-reparatur */
+    var targetView = meta.view || name;
     var views = document.querySelectorAll('.view');
     for (var j=0;j<views.length;j++){
-      views[j].classList.toggle('is-active', views[j].id === 'view-' + name);
+      views[j].classList.toggle('is-active', views[j].id === 'view-' + targetView);
     }
+
     var crumb = $('crumb-current'); if(crumb){ crumb.textContent = meta.crumb; }
     var sub   = $('view-subtitle');  if(sub){ sub.textContent   = meta.sub; }
-    var ed = $('editor-block'); if(ed){ ed.style.display = (name === 'warendaten') ? '' : 'none'; }
-    var red = $('rep-editor-block'); if(red){ red.style.display = (name === 'reparatur') ? '' : 'none'; }
+
+    /* 编辑器区域跟随目标视图 */
+    var ed = $('editor-block'); if(ed){ ed.style.display = (targetView === 'warendaten') ? '' : 'none'; }
+    var red = $('rep-editor-block'); if(red){ red.style.display = (targetView === 'reparatur') ? '' : 'none'; }
   }
+
   function bindViews(){
-    var items = document.querySelectorAll('.submenu-item[data-view]');
+    /* ★ 同时绑定子菜单项与主菜单项（Kreditbericht） */
+    var items = document.querySelectorAll('[data-view]');
     for (var i=0;i<items.length;i++){
       (function(el){
         el.addEventListener('click', function(){ switchView(el.getAttribute('data-view')); });
@@ -944,6 +959,42 @@
       })(items[i]);
     }
   }
+
+  /* ============ 侧边栏：Daten 子菜单展开 / 收起 ============ */
+  var datenMenu    = $('daten-menu-item');
+  var datenSubmenu = $('daten-submenu');
+  var datenArrow   = $('daten-arrow');
+  var datenOpen    = true;
+
+  function setDatenOpen(open){
+    datenOpen = !!open;
+    if (datenSubmenu) datenSubmenu.style.display = datenOpen ? '' : 'none';
+    if (datenArrow){
+      datenArrow.classList.toggle('ri-arrow-down-s-line', datenOpen);
+      datenArrow.classList.toggle('ri-arrow-right-s-line', !datenOpen);
+    }
+    if (datenMenu){
+      datenMenu.style.color = datenOpen ? 'var(--accent)' : '';
+      datenMenu.style.fontWeight = datenOpen ? '600' : '';
+      var ico = datenMenu.querySelector('i.ri-database-2-line');
+      if (ico) ico.style.color = datenOpen ? 'var(--accent)' : '';
+    }
+  }
+
+  function bindSidebar(){
+    if (datenMenu){
+      datenMenu.addEventListener('click', function(){ setDatenOpen(!datenOpen); });
+    }
+    /* 点击除 Daten 以外的任何主菜单项，都收起 Daten 子菜单 */
+    var mainItems = document.querySelectorAll('.menu-item');
+    for (var i=0;i<mainItems.length;i++){
+      (function(el){
+        if (el === datenMenu) return;
+        el.addEventListener('click', function(){ setDatenOpen(false); });
+      })(mainItems[i]);
+    }
+  }
+
   /* ============ Reparatur 编辑器（实时联动，含原金额基数） ============ */
   var repBase = $('rep-inp-base');
   var repOpts = [1, 2].map(function(i){
@@ -1005,6 +1056,7 @@
     });
     $('rep-reset-btn').addEventListener('click', repReset);
   }
+
   /* ============ 事件绑定 ============ */
   function bindEvents(){
     var numericInputs = [baseInput].concat(
@@ -1039,9 +1091,10 @@
     if (hideBtn) hideBtn.addEventListener('click', function(){ setNoteVisible(false); });
   }
 
-  /* ============ 初始化：默认隐藏备注 ============ */
+  /* ============ 初始化 ============ */
   bindEvents();
   bindViews();
+  bindSidebar();   /* ★ 侧边栏展开/收起 */
   bindRepEvents();
   repRecalc();
   recalc(false);   // 首屏静默同步，不触发闪烁
