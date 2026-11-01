@@ -165,6 +165,7 @@
   }
   .calc-input.full{width:100%;}
   .calc-input:focus{border-color:#0d7a5f; box-shadow:0 0 0 3px rgba(13,122,95,.12);}
+  select.calc-input{cursor:pointer; appearance:auto;}
 
   .base-input{
     padding:9px 12px; border:1.5px solid #b8860b; border-radius:9px;
@@ -251,6 +252,7 @@
   .rep-note{background:linear-gradient(135deg,#8b1a1a,#a31f1f);color:#fff;border-radius:12px;padding:14px 18px;font-size:13px;line-height:1.65;display:flex;gap:10px;align-items:flex-start;}
   .rep-note i{flex-shrink:0;font-size:18px;margin-top:2px;}
   .rep-note strong{font-weight:700;}
+
   .ph-card{background:#fff; border:1px dashed #c4ccd8; border-radius:14px; padding:48px 24px; text-align:center; color:var(--muted);}
   .ph-card i{font-size:36px; color:#c4ccd8; margin-bottom:10px; display:block;}
   .ph-card strong{display:block; color:var(--text); font-size:16px; margin-bottom:4px;}
@@ -528,7 +530,7 @@
         </div>
         <div class="rep-note">
           <i class="ri-information-line" aria-hidden="true"></i>
-          <div><strong>Option 1:</strong> Das System weist Ihnen zufällig 1–2 Reparaturaufträge zu. Nach Abschluss der Reparaturlösungen erfolgt die gemeinsame Auszahlung. &nbsp; <strong>Option 2:</strong> Intelligente KI-Lösung: Sofortige Auszahlung, keinerlei Bedienung erforderlich.</div>
+          <div id="rep-note-text" style="flex:1;line-height:1.65;"></div>
         </div>
       </section>
 
@@ -706,6 +708,29 @@
         <div class="num" id="rep-out-sum-total" style="font-size:20px;font-weight:700;">56.000 €</div>
       </div>
       <button type="button" class="reset-btn" id="rep-reset-btn" style="align-self:center;"><i class="ri-refresh-line" aria-hidden="true"></i>恢复默认</button>
+    </div>
+
+    <!-- 新增：备注选择与编辑区 -->
+    <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #e8c4c4;">
+      <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
+        <div style="flex:1; min-width:220px;">
+          <label for="rep-note-select" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;flex-wrap:wrap;">
+            <i class="ri-sticky-note-line" aria-hidden="true" style="color:#8b1a1a;font-size:15px;"></i>备注选择
+            <span style="font-weight:400;font-size:11px;color:#a0aabc;">— 切换并编辑对应内容</span>
+          </label>
+          <select id="rep-note-select" class="calc-input full">
+            <option value="0">默认备注①</option>
+            <option value="1">默认备注②</option>
+          </select>
+        </div>
+        <div style="flex:2.5; min-width:280px;">
+          <label for="rep-note-editor" style="display:flex;align-items:center;gap:6px;font-size:12px;font-weight:600;color:var(--muted);margin-bottom:6px;flex-wrap:wrap;">
+            <i class="ri-edit-2-line" aria-hidden="true" style="color:#8b1a1a;font-size:15px;"></i>备注内容编辑
+            <span style="font-weight:400;font-size:11px;color:#a0aabc;">— 输入的内容将同步到上方备注栏</span>
+          </label>
+          <textarea id="rep-note-editor" class="note-input-editor" rows="3" style="min-height:auto; border-color:#e8c4c4;" placeholder="输入备注内容..."></textarea>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -985,6 +1010,48 @@
     $('rep-reset-btn').addEventListener('click', repReset);
   }
 
+  /* 维修数据备注 */
+  var DEFAULT_REP_NOTES = [
+    '<strong>Option 1:</strong> Das System weist Ihnen zufällig 1–2 Reparaturaufträge zu. Nach Abschluss der Reparaturlösungen erfolgt die gemeinsame Auszahlung. &nbsp; <strong>Option 2:</strong> Intelligente KI-Lösung: Sofortige Auszahlung, keinerlei Bedienung erforderlich.',
+    'Diese Daten sind der letzte Reparaturauftrag für die Gelder. Nach Abschluss dieses Reparaturauftrags wird diese Wartungsaufgabe beendet. Nach Abschluss der Aufgabe wenden Sie sich bitte an die Finanzabteilung, um das gesamte Kapital und die Provisionen für diese vorausbezahlte Aufgabe abzurechnen. Wir wünschen Ihnen ein glückliches Leben!'
+  ];
+  var currentRepNotes = DEFAULT_REP_NOTES.slice();
+
+  function updateRepNoteDisplay() {
+    var target = $('rep-note-text');
+    var select = $('rep-note-select');
+    if (target && select) {
+      var idx = parseInt(select.value, 10) || 0;
+      target.innerHTML = currentRepNotes[idx] || '';
+    }
+  }
+
+  function bindRepNote(){
+    var select = $('rep-note-select');
+    var editor = $('rep-note-editor');
+    
+    if (select) {
+      select.addEventListener('change', function(){
+        var idx = parseInt(select.value, 10) || 0;
+        if (editor) editor.value = currentRepNotes[idx] || '';
+        updateRepNoteDisplay();
+      });
+    }
+    
+    if (editor) {
+      editor.addEventListener('input', function(){
+        var idx = parseInt(select.value, 10) || 0;
+        currentRepNotes[idx] = editor.value;
+        updateRepNoteDisplay();
+      });
+    }
+    
+    // 初始化
+    var idx = parseInt(select.value, 10) || 0;
+    if (editor) editor.value = currentRepNotes[idx] || '';
+    updateRepNoteDisplay();
+  }
+
   function bindEvents(){
     var numericInputs = [baseInput].concat(
       opts.map(function(o){ return o.amtInput; }),
@@ -1019,6 +1086,7 @@
   bindViews();
   bindSidebar();
   bindRepEvents();
+  bindRepNote();
   repRecalc();
   recalc(false);
   noteVisible = false;
