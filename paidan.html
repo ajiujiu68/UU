@@ -253,6 +253,34 @@
   .rep-note i{flex-shrink:0;font-size:18px;margin-top:2px;}
   .rep-note strong{font-weight:700;}
 
+  /* ===== Kreditbericht 状态卡片 ===== */
+  .credit-card{
+    flex:1; min-width:240px; border-radius:12px; padding:16px 18px;
+    transition:transform .2s,box-shadow .2s;
+  }
+  .credit-card:hover{transform:translateY(-3px);}
+  .credit-current{background:#fdf2f2;border:1px solid #eccfcf;box-shadow:0 6px 18px rgba(163,31,31,.06);}
+  .credit-target{background:#f0faf3;border:1px solid #b9e3c9;box-shadow:0 6px 18px rgba(13,122,95,.06);}
+  .credit-head{display:flex;align-items:center;gap:8px;margin-bottom:12px;}
+  .credit-ico{
+    width:20px;height:20px;border-radius:50%;display:inline-flex;
+    align-items:center;justify-content:center;color:#fff;font-size:11px;flex-shrink:0;
+  }
+  .credit-ico-bad{background:#a31f1f;}
+  .credit-ico-good{background:#0d7a5f;}
+  .credit-tag{margin-left:auto;font-size:9.5px;font-weight:800;letter-spacing:.08em;padding:3px 8px;border-radius:10px;white-space:nowrap;}
+  .credit-tag-bad{color:#a31f1f;background:rgba(163,31,31,.09);}
+  .credit-tag-good{color:#0d7a5f;background:rgba(13,122,95,.10);}
+  .credit-score{font-size:30px;font-weight:800;line-height:1.05;margin-bottom:14px;letter-spacing:-.02em;font-variant-numeric:tabular-nums;}
+  .credit-score-bad{color:#a31f1f;}
+  .credit-score-good{color:#0d7a5f;}
+  .credit-score-total{font-size:15px;font-weight:600;opacity:.5;letter-spacing:0;}
+  .credit-row{
+    display:flex;justify-content:space-between;align-items:baseline;gap:12px;
+    font-size:11.5px;color:#7a879c;padding:2px 0;
+  }
+  .credit-row span:last-child{font-weight:700;color:#2a3550;font-size:12px;font-variant-numeric:tabular-nums;}
+
   .ph-card{background:#fff; border:1px dashed #c4ccd8; border-radius:14px; padding:48px 24px; text-align:center; color:var(--muted);}
   .ph-card i{font-size:36px; color:#c4ccd8; margin-bottom:10px; display:block;}
   .ph-card strong{display:block; color:var(--text); font-size:16px; margin-bottom:4px;}
@@ -534,6 +562,86 @@
         </div>
       </section>
 
+      <!-- ===== Kreditbericht 视图（截图样式） ===== -->
+      <section id="view-kreditbericht" class="view">
+        <div style="background:#fff;border:1px solid #e8c4c4;border-radius:14px;padding:16px 20px;margin-bottom:18px;">
+          <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+            <i class="ri-tools-line" aria-hidden="true" style="color:#a31f1f;font-size:18px;"></i>
+            <span style="font-weight:700;font-size:15px;">Reparatur-Optionen</span>
+          </div>
+        </div>
+
+        <div class="rep-cards">
+          <div class="credit-card credit-current">
+            <div class="credit-head">
+              <span class="credit-ico credit-ico-bad"><i class="ri-close-line" aria-hidden="true"></i></span>
+              <strong style="font-size:14px;">Aktueller Status</strong>
+              <span class="credit-tag credit-tag-bad">EINGESCHRÄNKT</span>
+            </div>
+            <div class="credit-score credit-score-bad">
+              <span id="credit-cur-score">80</span><span class="credit-score-total"> / 100</span>
+            </div>
+            <div class="credit-row">
+              <span>Fehlerzahl</span>
+              <span><span id="credit-cur-errors">1</span> mal</span>
+            </div>
+            <div class="credit-row">
+              <span>Ausgewählte Punkte</span>
+              <span><span id="credit-cur-points">-20</span> Punkte</span>
+            </div>
+          </div>
+
+          <div class="credit-card credit-target">
+            <div class="credit-head">
+              <span class="credit-ico credit-ico-good"><i class="ri-check-line" aria-hidden="true"></i></span>
+              <strong style="font-size:14px;">Ziel-Status</strong>
+              <span class="credit-tag credit-tag-good">ERFORDERLICH</span>
+            </div>
+            <div class="credit-score credit-score-good">
+              <span>100</span><span class="credit-score-total"> / 100</span>
+            </div>
+            <div class="credit-row">
+              <span>Bedingung</span>
+              <span>Wiederherstellung</span>
+            </div>
+            <div class="credit-row">
+              <span>Frist</span>
+              <span><span id="credit-target-days">3</span> Tage</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="rep-table-wrap">
+          <table class="rep-table">
+            <thead>
+              <tr>
+                <th>Optionen</th>
+                <th>Datentyp</th>
+                <th class="num-col">Zahlungsbetrag</th>
+                <th class="num-col">Prozent</th>
+                <th class="num-col">Profitieren</th>
+                <th class="num-col">Auszahlungsbetrag</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td><span class="opt-badge" style="background:rgba(163,31,31,.10);color:#8b1a1a;">1</span>Option 1</td>
+                <td><span class="rep-type-pill"><i class="ri-arrow-down-line" aria-hidden="true"></i>Auftrag reparieren</span></td>
+                <td class="num-col"><span id="kredit-tbl-amt-1">13.600,00 €</span></td>
+                <td class="num-col"><span id="kredit-tbl-pct-1">40 %</span></td>
+                <td class="num-col" style="color:var(--success);"><span id="kredit-tbl-profit-1">+5.440,00 €</span></td>
+                <td class="num-col" style="color:#8b1a1a;font-weight:700;"><span id="kredit-tbl-total-1">19.040,00 €</span></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+
+        <div class="rep-note">
+          <i class="ri-information-line" aria-hidden="true"></i>
+          <div id="kredit-note-text" style="flex:1;line-height:1.65;"></div>
+        </div>
+      </section>
+
       <section id="view-produkte" class="view">
         <div class="ph-card"><i class="ri-search-line" aria-hidden="true"></i><strong>Produkte finden</strong><span>Diese Ansicht wird vorbereitet.</span></div>
       </section>
@@ -710,7 +818,30 @@
       <button type="button" class="reset-btn" id="rep-reset-btn" style="align-self:center;"><i class="ri-refresh-line" aria-hidden="true"></i>恢复默认</button>
     </div>
 
-    <!-- 新增：备注选择与编辑区 -->
+    <!-- Kreditbericht 状态编辑（仅 Kreditbericht 视图显示） -->
+    <div id="kredit-fields" style="display:none; margin-top:18px; padding-top:16px; border-top:1px dashed #e8c4c4;">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px;flex-wrap:wrap;">
+        <i class="ri-shield-check-line" aria-hidden="true" style="color:#8b1a1a;font-size:16px;"></i>
+        <strong style="font-size:13px;color:#8b1a1a;">Kreditbericht · Statuswerte</strong>
+        <span style="font-size:11px;color:#a0aabc;">修改后上方状态卡片同步更新</span>
+      </div>
+      <div class="flex flex-wrap gap-3">
+        <div class="opt-edit-col" style="border-top:3px solid #a31f1f;min-width:150px;">
+          <label for="kredit-inp-errors" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">Fehlerzahl (次)</label>
+          <input type="number" id="kredit-inp-errors" class="calc-input full" value="1" min="0" step="1" inputmode="numeric">
+        </div>
+        <div class="opt-edit-col" style="border-top:3px solid #a31f1f;min-width:150px;">
+          <label for="kredit-inp-points" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">Ausgewählte Punkte (分)</label>
+          <input type="number" id="kredit-inp-points" class="calc-input full" value="-20" step="1" inputmode="numeric">
+        </div>
+        <div class="opt-edit-col" style="border-top:3px solid #a31f1f;min-width:150px;">
+          <label for="kredit-inp-days" style="display:block;font-size:11.5px;font-weight:600;color:var(--muted);margin-bottom:5px;">Frist (天)</label>
+          <input type="number" id="kredit-inp-days" class="calc-input full" value="3" min="0" step="1" inputmode="numeric">
+        </div>
+      </div>
+    </div>
+
+    <!-- 备注选择与编辑区 -->
     <div style="margin-top:20px; padding-top:16px; border-top:1px dashed #e8c4c4;">
       <div style="display:flex; gap:12px; flex-wrap:wrap; align-items:flex-start;">
         <div style="flex:1; min-width:220px;">
@@ -872,7 +1003,7 @@
     produkte:      { crumb:'Produkte finden',     sub:'Produktsuche & Artikelstammdaten' },
     warendaten:    { crumb:'Warendaten',          sub:'Gewinnaufträge & Auszahlungsbeträge' },
     reparatur:     { crumb:'Daten zur Reparatur', sub:'Reparaturaufträge & Auszahlungsbeträge' },
-    kreditbericht: { crumb:'Kreditbericht',       sub:'Reparaturaufträge & Auszahlungsbeträge', view:'reparatur' },
+    kreditbericht: { crumb:'Kreditbericht',       sub:'Reparaturaufträge & Auszahlungsbeträge' },
     zusaetzlich:   { crumb:'Zusätzliche Daten',   sub:'Ergänzende Datensätze & Anhänge' },
     einrichten:    { crumb:'Daten einrichten',    sub:'Stammdaten & Voreinstellungen' }
   };
@@ -897,8 +1028,16 @@
     var crumb = $('crumb-current'); if(crumb){ crumb.textContent = meta.crumb; }
     var sub   = $('view-subtitle');  if(sub){ sub.textContent   = meta.sub; }
 
-    var ed = $('editor-block'); if(ed){ ed.style.display = (targetView === 'warendaten') ? '' : 'none'; }
-    var red = $('rep-editor-block'); if(red){ red.style.display = (targetView === 'reparatur') ? '' : 'none'; }
+    var ed = $('editor-block');
+    if(ed){ ed.style.display = (targetView === 'warendaten') ? '' : 'none'; }
+
+    var red = $('rep-editor-block');
+    if(red){ red.style.display = (targetView === 'reparatur' || targetView === 'kreditbericht') ? '' : 'none'; }
+
+    var kf = $('kredit-fields');
+    if(kf){ kf.style.display = (targetView === 'kreditbericht') ? '' : 'none'; }
+
+    refreshRepNoteForView(targetView);
   }
 
   function bindViews(){
@@ -946,6 +1085,7 @@
     }
   }
 
+  /* ---------- 维修数据 ---------- */
   var repBase = $('rep-inp-base');
   var repOpts = [1, 2].map(function(i){
     return {
@@ -958,7 +1098,11 @@
       tblAmt:    $('rep-tbl-amt-' + i),
       tblPct:    $('rep-tbl-pct-' + i),
       tblProfit: $('rep-tbl-profit-' + i),
-      tblTotal:  $('rep-tbl-total-' + i)
+      tblTotal:  $('rep-tbl-total-' + i),
+      kAmt:      $('kredit-tbl-amt-' + i),
+      kPct:      $('kredit-tbl-pct-' + i),
+      kProfit:   $('kredit-tbl-profit-' + i),
+      kTotal:    $('kredit-tbl-total-' + i)
     };
   });
   var REP_DEFAULTS = [[13600, 40], [23100, 60]];
@@ -973,14 +1117,21 @@
       var total  = base + amt + profit;
       totAmt    += amt;
       totProfit += profit;
+
       setText(o.sumAmt,    nfAmount.format(amt) + ' €');
       setText(o.sumPctLbl, pct + ' % Gewinn');
       setText(o.sumProfit, '+' + nfAmount.format(profit) + ' €');
       setText(o.sumTotal,  nfAmount.format(total) + ' €');
+
       setText(o.tblAmt,    nfMoney.format(amt) + ' €');
       setText(o.tblPct,    pct + ' %');
       setText(o.tblProfit, '+' + nfMoney.format(profit) + ' €');
       setText(o.tblTotal,  nfMoney.format(total) + ' €');
+
+      if (o.kAmt)    setText(o.kAmt,    nfMoney.format(amt) + ' €');
+      if (o.kPct)    setText(o.kPct,    pct + ' %');
+      if (o.kProfit) setText(o.kProfit, '+' + nfMoney.format(profit) + ' €');
+      if (o.kTotal)  setText(o.kTotal,  nfMoney.format(total) + ' €');
     });
     setText($('rep-out-sum-amt'),    nfAmount.format(totAmt) + ' €');
     setText($('rep-out-sum-profit'), '+' + nfAmount.format(totProfit) + ' €');
@@ -1010,46 +1161,136 @@
     $('rep-reset-btn').addEventListener('click', repReset);
   }
 
-  /* 维修数据备注 */
+  /* ---------- Kreditbericht 状态 ---------- */
+  var kreditErrors = $('kredit-inp-errors');
+  var kreditPoints = $('kredit-inp-points');
+  var kreditDays   = $('kredit-inp-days');
+
+  function kreditRecalc(){
+    if (!kreditErrors || !kreditPoints || !kreditDays) return;
+    var errors = readNum(kreditErrors);
+    var points = readNum(kreditPoints);
+    var days   = readNum(kreditDays);
+
+    var score = 100 + points;
+    if (score > 100) score = 100;
+    if (score < 0)   score = 0;
+
+    setText($('credit-cur-score'),  nfAmount.format(score));
+    setText($('credit-cur-errors'), nfAmount.format(errors));
+    setText($('credit-cur-points'), nfAmount.format(points));
+    setText($('credit-target-days'), nfAmount.format(days));
+  }
+
+  function bindKreditEvents(){
+    [kreditErrors, kreditPoints, kreditDays].forEach(function(el){
+      if (!el) return;
+      el.addEventListener('input', kreditRecalc);
+    });
+  }
+
+  /* ---------- 维修数据备注 ---------- */
   var DEFAULT_REP_NOTES = [
     '<strong>Option 1:</strong> Das System weist Ihnen zufällig 1–2 Reparaturaufträge zu. Nach Abschluss der Reparaturlösungen erfolgt die gemeinsame Auszahlung. &nbsp; <strong>Option 2:</strong> Intelligente KI-Lösung: Sofortige Auszahlung, keinerlei Bedienung erforderlich.',
     'Diese Daten sind der letzte Reparaturauftrag für die Gelder. Nach Abschluss dieses Reparaturauftrags wird diese Wartungsaufgabe beendet. Nach Abschluss der Aufgabe wenden Sie sich bitte an die Finanzabteilung, um das gesamte Kapital und die Provisionen für diese vorausbezahlte Aufgabe abzurechnen. Wir wünschen Ihnen ein glückliches Leben!'
   ];
-  var currentRepNotes = DEFAULT_REP_NOTES.slice();
 
-  function updateRepNoteDisplay() {
-    var target = $('rep-note-text');
+  var DEFAULT_KREDIT_NOTES = [
+    'Anforderung: Da Ihre Bonitätspunktzahl unter 100 liegt, ist eine Korrektur erforderlich. Nach Abschluss der Korrektur können Sie die Investitionssumme einschließlich Provision im System abheben'
+  ];
+
+  var currentRepNotes = DEFAULT_REP_NOTES.slice();
+  var currentKreditNotes = DEFAULT_KREDIT_NOTES.slice();
+  var repNoteIdx = 0;
+  var kreditNoteIdx = 0;
+
+  function getCurrentNoteMode(){
+    var active = document.querySelector('.view.is-active');
+    return (active && active.id === 'view-kreditbericht') ? 'kreditbericht' : 'reparatur';
+  }
+
+  function getNoteStore(mode){
+    return mode === 'kreditbericht' ? currentKreditNotes : currentRepNotes;
+  }
+
+  function getNoteLabels(mode){
+    return mode === 'kreditbericht' ? ['默认备注①'] : ['默认备注①', '默认备注②'];
+  }
+
+  function updateRepNoteDisplay(mode){
+    mode = mode || getCurrentNoteMode();
     var select = $('rep-note-select');
-    if (target && select) {
-      var idx = parseInt(select.value, 10) || 0;
-      target.innerHTML = currentRepNotes[idx] || '';
+    if (!select) return;
+    var notes = getNoteStore(mode);
+    var idx = parseInt(select.value, 10) || 0;
+    if (idx >= notes.length) idx = 0;
+    var html = notes[idx] || '';
+    if (mode === 'kreditbericht') {
+      var targetK = $('kredit-note-text');
+      if (targetK) targetK.innerHTML = html;
+    } else {
+      var target = $('rep-note-text');
+      if (target) target.innerHTML = html;
+    }
+  }
+
+  function rebuildNoteSelect(mode){
+    mode = mode || getCurrentNoteMode();
+    var select = $('rep-note-select');
+    var editor = $('rep-note-editor');
+    if (!select) return;
+    var notes = getNoteStore(mode);
+    var labels = getNoteLabels(mode);
+    var idx = mode === 'kreditbericht' ? kreditNoteIdx : repNoteIdx;
+    if (idx >= notes.length) idx = 0;
+
+    select.innerHTML = '';
+    notes.forEach(function(_, i){
+      var opt = document.createElement('option');
+      opt.value = String(i);
+      opt.textContent = labels[i] || ('默认备注' + (i + 1));
+      select.appendChild(opt);
+    });
+    select.value = String(idx);
+    if (editor) editor.value = notes[idx] || '';
+    updateRepNoteDisplay(mode);
+  }
+
+  function refreshRepNoteForView(targetView){
+    if (targetView === 'reparatur' || targetView === 'kreditbericht') {
+      rebuildNoteSelect(targetView);
     }
   }
 
   function bindRepNote(){
     var select = $('rep-note-select');
     var editor = $('rep-note-editor');
-    
+
     if (select) {
       select.addEventListener('change', function(){
+        var mode = getCurrentNoteMode();
         var idx = parseInt(select.value, 10) || 0;
-        if (editor) editor.value = currentRepNotes[idx] || '';
-        updateRepNoteDisplay();
+        if (mode === 'kreditbericht') { kreditNoteIdx = idx; }
+        else { repNoteIdx = idx; }
+        var notes = getNoteStore(mode);
+        if (editor) editor.value = notes[idx] || '';
+        updateRepNoteDisplay(mode);
       });
     }
-    
+
     if (editor) {
       editor.addEventListener('input', function(){
+        var mode = getCurrentNoteMode();
         var idx = parseInt(select.value, 10) || 0;
-        currentRepNotes[idx] = editor.value;
-        updateRepNoteDisplay();
+        var notes = getNoteStore(mode);
+        notes[idx] = editor.value;
+        if (mode === 'kreditbericht') { kreditNoteIdx = idx; }
+        else { repNoteIdx = idx; }
+        updateRepNoteDisplay(mode);
       });
     }
-    
-    // 初始化
-    var idx = parseInt(select.value, 10) || 0;
-    if (editor) editor.value = currentRepNotes[idx] || '';
-    updateRepNoteDisplay();
+
+    rebuildNoteSelect('reparatur');
   }
 
   function bindEvents(){
@@ -1086,8 +1327,10 @@
   bindViews();
   bindSidebar();
   bindRepEvents();
+  bindKreditEvents();
   bindRepNote();
   repRecalc();
+  kreditRecalc();
   recalc(false);
   noteVisible = false;
   toggleNote();
