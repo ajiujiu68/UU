@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>信誉分</title>
+<title>TrustScore · Admin</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
@@ -85,6 +85,7 @@
   .page-btn:hover:not(:disabled):not(.active){border-color:#cbd5e1;background:#f8fafc}
   .page-btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
   .page-btn:disabled{opacity:.4;cursor:not-allowed}
+  .page-ellipsis{display:inline-flex;align-items:center;justify-content:center;min-width:30px;height:30px;font-size:12.5px;color:var(--muted);user-select:none}
   .edit-card{background:var(--card);border:1px solid var(--border);border-radius:var(--radius);box-shadow:var(--shadow);overflow:hidden}
   .edit-head{display:flex;align-items:center;gap:10px;padding:16px 20px;border-bottom:1px solid var(--border);flex-wrap:wrap}
   .edit-head h3{font-size:15px;font-weight:600;display:flex;align-items:center;gap:8px}
@@ -145,7 +146,7 @@
         <option value="cancelled">Storniert</option>
       </select>
       <div class="toolbar-spacer"></div>
-      <span style="font-size:12px;color:var(--muted)" id="resultCount">10 Aufträge</span>
+      <span style="font-size:12px;color:var(--muted)" id="resultCount">165351 Aufträge</span>
       <div class="toolbar-actions">
         <button class="btn" id="exportBtn"><i class="ri-download-line"></i>CSV</button>
         <button class="btn btn-primary" id="refreshBtn"><i class="ri-refresh-line" id="refreshIcon"></i><span id="refreshText">Aktualisieren</span></button>
@@ -169,67 +170,68 @@
       </table>
     </div>
     <div class="table-footer">
-      <div>Zeige <strong style="color:var(--text)" id="showingRange">1–6</strong> von <strong style="color:var(--text)" id="totalCount">10</strong> Aufträgen · Letzte Aktualisierung: <span id="lastUpdate">—</span></div>
+      <div>Zeige <strong style="color:var(--text)">7</strong> pro Seite, insgesamt <strong style="color:var(--text)">165351</strong> Aufträge · Letzte Aktualisierung: <span id="lastUpdate">—</span></div>
       <div class="pagination" id="pagination"></div>
     </div>
   </div>
 
+  <!-- 唯一的中文区域：编辑面板 -->
   <div class="edit-card">
     <div class="edit-head">
-      <h3><i class="ri-edit-line"></i>Auftrag bearbeiten</h3>
+      <h3><i class="ri-edit-line"></i>编辑订单</h3>
       <span class="edit-badge" id="editBadge">—</span>
-      <span class="edit-hint"><i class="ri-keyboard-line"></i>Drücken Sie <kbd>Enter</kbd> zum Anwenden</span>
+      <span class="edit-hint"><i class="ri-keyboard-line"></i>按 <kbd>Enter</kbd> 键应用修改</span>
     </div>
     <div class="edit-body">
       <div class="field">
-        <label for="edAccount"><i class="ri-user-line"></i>Mitgliedskonto</label>
-        <input type="text" id="edAccount" placeholder="z.B. mi.vlasova@gmx.de" autocomplete="off" spellcheck="false">
+        <label for="edAccount"><i class="ri-user-line"></i>用户账号</label>
+        <input type="text" id="edAccount" placeholder="例如: fabzok" autocomplete="off" spellcheck="false">
       </div>
       <div class="field">
-        <label for="edAmount"><i class="ri-euro-line"></i>Betrag (€)</label>
+        <label for="edAmount"><i class="ri-euro-line"></i>金额 (€)</label>
         <input type="number" id="edAmount" step="0.01" min="0" placeholder="0,00">
       </div>
       <div class="field">
-        <label for="edStatus"><i class="ri-flag-line"></i>Status</label>
+        <label for="edStatus"><i class="ri-flag-line"></i>状态</label>
         <select id="edStatus">
-          <option value="success">Erfolgreich</option>
-          <option value="pending">In Bearbeitung</option>
-          <option value="failed">Fehlgeschlagen</option>
-          <option value="cancelled">Storniert</option>
+          <option value="success">成功</option>
+          <option value="pending">处理中</option>
+          <option value="failed">失败</option>
+          <option value="cancelled">已取消</option>
         </select>
       </div>
       <div class="field">
-        <label for="edRelease"><i class="ri-robot-line"></i>Freigabetyp</label>
+        <label for="edRelease"><i class="ri-robot-line"></i>放款类型</label>
         <select id="edRelease">
-          <option value="auto">Systemautomatik</option>
-          <option value="manual">Manuelle Freigabe</option>
+          <option value="auto">系统自动</option>
+          <option value="manual">人工审核</option>
           <option value="none">—</option>
         </select>
       </div>
       <div class="field" style="grid-column:span 2">
-        <label for="edReason"><i class="ri-alert-line"></i>Ablehnungsgrund</label>
+        <label for="edReason"><i class="ri-alert-line"></i>拒绝原因</label>
         <select id="edReason">
-          <option value="">— Kein Grund</option>
-          <option value="Vertrauenspunkte < 100">Vertrauenspunkte &lt; 100</option>
-          <option value="Konto nicht verifiziert">Konto nicht verifiziert</option>
-          <option value="Betrag über Tageslimit">Betrag über Tageslimit</option>
-          <option value="Ungültige Bankverbindung">Ungültige Bankverbindung</option>
-          <option value="Vom Benutzer abgebrochen">Vom Benutzer abgebrochen</option>
-          <option value="Kein VIP-Auszahlungskanal">Kein VIP-Auszahlungskanal</option>
-          <option value="Sonstiger Grund">Sonstiger Grund</option>
+          <option value="">— 无</option>
+          <option value="Vertrauenspunkte < 100">信用分低于 100</option>
+          <option value="Konto nicht verifiziert">账号未认证</option>
+          <option value="Betrag über Tageslimit">超出单日限额</option>
+          <option value="Ungültige Bankverbindung">银行信息无效</option>
+          <option value="Vom Benutzer abgebrochen">用户取消</option>
+          <option value="Verdacht auf Betrug">涉嫌欺诈</option>
+          <option value="Sonstiger Grund">其他原因</option>
         </select>
       </div>
       <div class="field">
-        <label for="edApply"><i class="ri-calendar-line"></i>Beantragt am</label>
+        <label for="edApply"><i class="ri-calendar-line"></i>申请时间</label>
         <input type="datetime-local" id="edApply" step="1">
       </div>
       <div class="field">
-        <label for="edUpdate"><i class="ri-refresh-line"></i>Aktualisiert am</label>
+        <label for="edUpdate"><i class="ri-refresh-line"></i>更新时间</label>
         <input type="datetime-local" id="edUpdate" step="1">
       </div>
       <div class="apply-row">
-        <button class="btn" id="resetBtn"><i class="ri-arrow-go-back-line"></i>Zurücksetzen</button>
-        <button class="btn btn-primary" id="applyBtn"><i class="ri-check-line"></i>Änderungen anwenden</button>
+        <button class="btn" id="resetBtn"><i class="ri-arrow-go-back-line"></i>重置</button>
+        <button class="btn btn-primary" id="applyBtn"><i class="ri-check-line"></i>应用修改</button>
       </div>
     </div>
   </div>
@@ -256,36 +258,52 @@
     manual:{label:'Manuell',         icon:'ri-user-shared-line'},
     none:  {label:'—',               icon:''}
   };
+  
   var AVATAR_COLORS = ['#6366f1','#0ea5e9','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16'];
-  var rows = [
-    {id:'26807085649oFs', account:'mi.vlasova@gmx.de',         amount:9.00,   status:'success', reason:'', release:'auto',   apply:'2026-08-07T08:56:04', update:'2026-08-07T09:10:04'},
-    {id:'26807085650aBx', account:'joahimans36@yahoo.com',    amount:50.00,  status:'success', reason:'', release:'manual', apply:'2026-08-06T14:23:10', update:'2026-08-06T15:10:42'},
-    {id:'26807085651cDy', account:'Sabine.oo83@gmx.de',   amount:120.50, status:'success', reason:'', release:'auto',   apply:'2026-08-07T09:12:33', update:'2026-08-07T09:20:08'},
-    {id:'26807085652eFz', account:'raginikumari965@gmail.com',    amount:25.00,  status:'success', reason:'', release:'auto',   apply:'2026-08-05T11:30:22', update:'2026-08-05T11:45:05'},
-    {id:'26807085653gHj', account:'PameGlen@gmail.com',     amount:200.00, status:'success', reason:'', release:'manual', apply:'2026-08-04T16:45:11', update:'2026-08-04T17:20:30'},
-    {id:'26807085654iKl', account:'Brix@gmx.de',    amount:75.80,  status:'success', reason:'', release:'manual', apply:'2026-08-03T10:00:00', update:'2026-08-03T10:30:47'},
-    {id:'26807085655jMn', account:'v6_0c4sFm_I08Fh', amount:150.00, status:'success', reason:'', release:'manual', apply:'2026-08-02T11:20:00', update:'2026-08-02T12:05:18'},
-    {id:'26807085656kNo', account:'michael.wagner', amount:35.50,  status:'success', reason:'', release:'auto',   apply:'2026-08-07T10:05:47', update:'2026-08-07T10:15:22'},
-    {id:'26807085657lPq', account:'julia_becker',   amount:89.90,  status:'success', reason:'', release:'auto',   apply:'2026-08-01T09:40:15', update:'2026-08-01T09:55:03'},
-    {id:'26807085658mRs', account:'davidhoffmann', amount:420.00, status:'success', reason:'', release:'manual', apply:'2026-07-31T15:30:00', update:'2026-07-31T16:12:45'}
-  ];
+  var accounts = ['mi.vlasova@gmx.de', 'joahimans36@yahoo.com', 'Sabine.oo83@gmx.de', 'raginikumari965@gmail.com', 'PameGlen@gmail.com', 'Brix@gmx.de', 'v6_0c4sFm_I08Fh'];
+  
+  var p = function(n){return String(n).padStart(2,'0');};
+  var toLocalISO = function(d){
+    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
+  };
 
-  // ===== 自动将标记处的日期（年月日）更新为当日，保留原来的时分秒 =====
-  var now = new Date();
-  var todayDate = now.getFullYear() + '-' + String(now.getMonth() + 1).padStart(2, '0') + '-' + String(now.getDate()).padStart(2, '0');
-  rows.forEach(function(r) {
-    if(r.apply) r.apply = todayDate + r.apply.substring(10);
-    if(r.update) r.update = todayDate + r.update.substring(10);
-  });
-  // ===================================================================
+  // 生成 165,351 条虚拟数据
+  var TOTAL_ROWS = 165351;
+  var rows = [];
+  var baseTime = new Date(2026, 10, 2, 17, 51, 0).getTime(); 
+  var currentApplyTime = baseTime;
+  
+  for (var i = 0; i < TOTAL_ROWS; i++) {
+    var acc = accounts[i % accounts.length];
+    var amount = (Math.random() * 400 + 10).toFixed(2);
+    
+    if (i > 0) {
+      // 初始列表：每行随机减去 1-4 分钟，模拟自然递减
+      currentApplyTime -= (Math.floor(Math.random() * 4) + 1) * 60 * 1000;
+    }
+    
+    var applyTime = currentApplyTime;
+    // AKTUALISIERT 比 BEANTRAGT 随机晚 3-12 分钟
+    var processMins = Math.floor(Math.random() * 10) + 3;
+    var updateTime = applyTime + processMins * 60 * 1000;
+    
+    rows.push({
+      id: '26807085' + String(649 + i).padStart(5, '0') + 'oFs',
+      account: acc,
+      amount: parseFloat(amount),
+      status: 'success',
+      reason: '',
+      release: Math.random() > 0.5 ? 'auto' : 'manual',
+      apply: toLocalISO(new Date(applyTime)),
+      update: toLocalISO(new Date(updateTime))
+    });
+  }
 
-  /* ===== FIX:用订单号(唯一ID)追踪选中项，排序/分页后永不丢失 ===== */
-  var selectedId = rows[2].id;  /* 默认选中第3个订单 anna_schmidt，方便测试 */
-  var sortKey = 'id', sortDir = 1;  /* 默认按订单号升序，位置稳定，修改时间不跳动 */
-  var pageSize = 6, currentPage = 1;
+  var selectedId = rows[0].id;
+  var sortKey = 'id', sortDir = 1;
+  var pageSize = 7, currentPage = 1;
 
   function fmtEUR(n){return '€ ' + n.toFixed(2).replace('.',',');}
-  function p(n){return String(n).padStart(2,'0');}
   function fmtDT(s){
     if(!s) return '<span class="d">—</span>';
     var d = new Date(s); if(isNaN(d)) return s;
@@ -296,18 +314,14 @@
     var d = new Date(s); if(isNaN(d)) return s;
     return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());
   }
-  /* FIX:本地时间转 datetime-local 格式，避免UTC时差 */
-  function toLocalISO(d){
-    return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
-  }
   function findRow(id){for(var i=0;i<rows.length;i++) if(rows[i].id===id) return rows[i]; return null;}
   function avatarColor(name){
     var h = 0; for(var i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 997;
     return AVATAR_COLORS[h % AVATAR_COLORS.length];
   }
   function initials(name){
-    var parts = name.replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/);
-    if(parts.length>=2) return (parts[0][0]+parts[1][0]).toUpperCase();
+    var parts = name.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/);
+    if(parts.length>=2 && parts[0][0] && parts[1][0]) return (parts[0][0]+parts[1][0]).toUpperCase();
     return name.slice(0,2).toUpperCase();
   }
 
@@ -330,7 +344,6 @@
     return list;
   }
 
-  /* FIX:应用修改后，自动翻到选中订单所在页 */
   function ensureSelectedVisible(list){
     if(!selectedId) return;
     var pos = -1;
@@ -342,14 +355,43 @@
   }
 
   function renderPagination(total){
-    var totalPages = Math.max(1, Math.ceil(total/pageSize));
+    var totalPages = Math.ceil(total / pageSize);
     if(currentPage > totalPages) currentPage = totalPages;
+    if(currentPage < 1) currentPage = 1;
+
     var html = '<button class="page-btn" data-page="prev"'+(currentPage===1?' disabled':'')+'><i class="ri-arrow-left-s-line"></i></button>';
-    for(var i=1;i<=totalPages;i++){
-      html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
+    
+    if (totalPages <= 7) {
+      for (var i = 1; i <= totalPages; i++) {
+        html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
+      }
+    } else {
+      if (currentPage <= 4) {
+        for (var i = 1; i <= 5; i++) {
+          html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
+        }
+        html += '<span class="page-ellipsis">...</span>';
+        html += '<button class="page-btn" data-page="'+totalPages+'">'+totalPages+'</button>';
+      } else if (currentPage >= totalPages - 3) {
+        html += '<button class="page-btn" data-page="1">1</button>';
+        html += '<span class="page-ellipsis">...</span>';
+        for (var i = totalPages - 4; i <= totalPages; i++) {
+          html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
+        }
+      } else {
+        html += '<button class="page-btn" data-page="1">1</button>';
+        html += '<span class="page-ellipsis">...</span>';
+        for (var i = currentPage - 1; i <= currentPage + 1; i++) {
+          html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
+        }
+        html += '<span class="page-ellipsis">...</span>';
+        html += '<button class="page-btn" data-page="'+totalPages+'">'+totalPages+'</button>';
+      }
     }
+    
     html += '<button class="page-btn" data-page="next"'+(currentPage===totalPages?' disabled':'')+'><i class="ri-arrow-right-s-line"></i></button>';
     pagEl.innerHTML = html;
+    
     pagEl.querySelectorAll('.page-btn').forEach(function(btn){
       btn.addEventListener('click', function(){
         if(btn.disabled) return;
@@ -365,13 +407,14 @@
   function render(){
     var list = getFiltered();
     var total = list.length;
-    ensureSelectedVisible(list);  /* FIX:确保选中行在当前页 */
+    ensureSelectedVisible(list);
+    
     document.getElementById('resultCount').textContent = total + ' Aufträge';
-    document.getElementById('totalCount').textContent = total;
+    
     renderPagination(total);
     var start = (currentPage-1)*pageSize;
     var pageList = list.slice(start, start+pageSize);
-    document.getElementById('showingRange').textContent = total ? (start+1)+'–'+Math.min(start+pageSize,total) : '0';
+    
     if(!pageList.length){
       tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="ri-inbox-line"></i>Keine Aufträge gefunden</div></td></tr>';
       return;
@@ -407,10 +450,11 @@
     apply:document.getElementById('edApply'),
     update:document.getElementById('edUpdate')
   };
+  
   function fillForm(){
     var r = findRow(selectedId);
-    if(!r){document.getElementById('editBadge').textContent='Kein Auftrag ausgewählt';return;}
-    document.getElementById('editBadge').textContent = 'Auftrag ' + r.id;
+    if(!r){document.getElementById('editBadge').textContent='未选择订单';return;}
+    document.getElementById('editBadge').textContent = '订单 ' + r.id;
     f.account.value = r.account;
     f.amount.value = r.amount.toFixed(2);
     f.status.value = r.status;
@@ -419,6 +463,7 @@
     f.apply.value = r.apply;
     f.update.value = r.update;
   }
+  
   function flashBadge(msg){
     var b = document.getElementById('editBadge');
     var old = b.textContent;
@@ -431,38 +476,81 @@
       b.style.background='';b.style.color='';b.style.borderColor='';
     },1500);
   }
+
   function applyEdit(){
-    var r = findRow(selectedId);  /* FIX:用ID查找，永远找对订单 */
+    var r = findRow(selectedId);
     if(!r) return;
+    
     r.account = f.account.value.trim() || r.account;
     var amt = parseFloat(f.amount.value);
     r.amount = (isNaN(amt)||amt<0) ? r.amount : amt;
     r.status = f.status.value;
     r.release = f.release.value;
     r.reason = f.reason.value;
-    if(f.apply.value) r.apply = f.apply.value;
-    if(f.update.value) r.update = f.update.value;
-    else r.update = toLocalISO(new Date());  /* FIX:本地时间，无UTC时差 */
+
+    var baseApplyStr = f.apply.value || r.apply;
+    var baseUpdateStr = f.update.value || r.update;
+    
+    var baseApplyTime = new Date(baseApplyStr).getTime();
+
+    var currentIndex = -1;
+    for(var i=0; i<rows.length; i++) {
+      if(rows[i].id === selectedId) { currentIndex = i; break; }
+    }
+
+    // 设置当前行时间
+    r.apply = baseApplyStr;
+    r.update = baseUpdateStr;
+
+    // 向下遍历：随机递减 1-4 分钟
+    var prevApplyTime = baseApplyTime;
+    for (var i = currentIndex + 1; i < rows.length; i++) {
+        var offsetMins = Math.floor(Math.random() * 4) + 1; 
+        prevApplyTime -= offsetMins * 60 * 1000;
+        
+        rows[i].apply = toLocalISO(new Date(prevApplyTime));
+        
+        var processMins = Math.floor(Math.random() * 10) + 3;
+        var updateTime = prevApplyTime + processMins * 60 * 1000;
+        rows[i].update = toLocalISO(new Date(updateTime));
+    }
+
+    // 向上遍历：随机递增 1-4 分钟
+    var nextApplyTime = baseApplyTime;
+    for (var i = currentIndex - 1; i >= 0; i--) {
+        var offsetMins = Math.floor(Math.random() * 4) + 1;
+        nextApplyTime += offsetMins * 60 * 1000;
+        
+        rows[i].apply = toLocalISO(new Date(nextApplyTime));
+        
+        var processMins = Math.floor(Math.random() * 10) + 3;
+        var updateTime = nextApplyTime + processMins * 60 * 1000;
+        rows[i].update = toLocalISO(new Date(updateTime));
+    }
+
     render();
-    fillForm();  /* 回填的还是同一个订单 */
-    flashBadge('Gespeichert ✓');
+    fillForm();
+    flashBadge('已保存并同步时间 ✓');
   }
 
   tbody.addEventListener('click', function(e){
     var tr = e.target.closest('tr[data-id]');
     if(!tr) return;
-    selectedId = tr.dataset.id;  /* FIX:记录订单ID，而非数组索引 */
+    selectedId = tr.dataset.id;
     render(); fillForm();
   });
+  
   document.getElementById('applyBtn').addEventListener('click', applyEdit);
   document.getElementById('resetBtn').addEventListener('click', fillForm);
   document.getElementById('searchInput').addEventListener('input', function(){currentPage=1;render();});
   document.getElementById('statusFilter').addEventListener('change', function(){currentPage=1;render();});
+  
   Object.keys(f).forEach(function(k){
     f[k].addEventListener('keydown', function(e){
       if(e.key==='Enter'){e.preventDefault();applyEdit();}
     });
   });
+  
   document.querySelectorAll('thead th[data-sort]').forEach(function(th){
     th.addEventListener('click', function(){
       var k = th.dataset.sort;
@@ -473,14 +561,16 @@
       render();
     });
   });
+  
   document.getElementById('refreshBtn').addEventListener('click', function(){
     var btn = this, icon = document.getElementById('refreshIcon'), txt = document.getElementById('refreshText');
-    btn.disabled = true; icon.classList.add('spin'); txt.textContent = '…';
+    btn.disabled = true; icon.classList.add('spin'); txt.textContent = '...';
     setTimeout(function(){
       btn.disabled = false; icon.classList.remove('spin'); txt.textContent = 'Aktualisieren';
       document.getElementById('lastUpdate').textContent = fmtShort(new Date());
     }, 900);
   });
+  
   document.getElementById('exportBtn').addEventListener('click', function(){
     flashBadge('CSV vorbereitet ✓');
   });
