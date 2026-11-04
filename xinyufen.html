@@ -270,7 +270,7 @@
   // 生成 165,351 条虚拟数据
   var TOTAL_ROWS = 165351;
   var rows = [];
-  var baseTime = new Date(2026, 10, 2, 17, 51, 0).getTime(); 
+  var baseTime = Date.now();
   var currentApplyTime = baseTime;
   
   for (var i = 0; i < TOTAL_ROWS; i++) {
