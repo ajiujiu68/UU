@@ -156,7 +156,7 @@
       <table>
         <thead>
           <tr>
-            <th data-sort="id">Auftrags-ID<span class="sort">↑</span></th>
+            <th data-sort="id">Auftrags-ID<span class="sort">↕</span></th>
             <th data-sort="account">Benutzerkonto<span class="sort">↕</span></th>
             <th data-sort="amount">Betrag<span class="sort">↕</span></th>
             <th>Status</th>
@@ -267,6 +267,18 @@
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
   };
 
+  // 随机且唯一的订单号生成（10 位随机数字 + oFs 后缀，Set 去重防止碰撞）
+  var usedIds = new Set();
+  function randomOrderId(){
+    var digits;
+    do {
+      digits = '';
+      for (var k = 0; k < 10; k++) digits += Math.floor(Math.random() * 10);
+    } while (usedIds.has(digits));
+    usedIds.add(digits);
+    return '268' + digits + 'oFs';
+  }
+
   // 生成 165,351 条虚拟数据
   var TOTAL_ROWS = 165351;
   var rows = [];
@@ -288,7 +300,7 @@
     var updateTime = applyTime + processMins * 60 * 1000;
     
     rows.push({
-      id: '26807085' + String(649 + i).padStart(5, '0') + 'oFs',
+      id: randomOrderId(),
       account: acc,
       amount: parseFloat(amount),
       status: 'success',
@@ -300,7 +312,8 @@
   }
 
   var selectedId = rows[0].id;
-  var sortKey = 'id', sortDir = 1;
+  // 默认按申请时间倒序（最新在最前），这样随机 ID 不会打乱初始页
+  var sortKey = 'apply', sortDir = -1;
   var pageSize = 7, currentPage = 1;
 
   function fmtEUR(n){return '€ ' + n.toFixed(2).replace('.',',');}
@@ -574,6 +587,11 @@
   document.getElementById('exportBtn').addEventListener('click', function(){
     flashBadge('CSV vorbereitet ✓');
   });
+
+  // 初始化默认排序指示
+  var defaultTh = document.querySelector('thead th[data-sort="apply"]');
+  defaultTh.classList.add('sorted');
+  defaultTh.querySelector('.sort').textContent = '↓';
 
   document.getElementById('lastUpdate').textContent = fmtShort(new Date());
   render();
