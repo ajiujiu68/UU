@@ -414,6 +414,8 @@
             gap: 14px;
             padding: 20px 20px 22px;
             background: #fafafa;
+            max-height: calc(100vh - 120px);
+            overflow-y: auto;
         }
 
         .panel-group-title {
@@ -572,6 +574,10 @@
                 width: 900px;
                 max-width: 100%;
             }
+            .editor-body {
+                max-height: none;
+                overflow-y: visible;
+            }
         }
         @media (max-width: 720px) {
             .content {
@@ -649,7 +655,7 @@
                             <tbody>
                                 <!-- ↓↓↓ 测试提现：可删除（加 id） ↓↓↓ -->
                                 <tr id="row-test">
-                                    <td class="col-action">Testauszahlungsbetrag:</td>
+                                    <td class="col-action" id="label-test">Testauszahlungsbetrag:</td>
                                     <td class="col-amount" id="cell-test">50,00 €</td>
                                     <td class="col-status-icon">
                                         <span class="status-icon icon-success">
@@ -664,7 +670,7 @@
                                 </tr>
                                 <!-- ↓↓↓ 第一笔：状态图标与文本加 id，方便与 test 联动 ↓↓↓ -->
                                 <tr>
-                                    <td class="col-action">Erste Auszahlung:</td>
+                                    <td class="col-action" id="label-first">Erste Auszahlung:</td>
                                     <td class="col-amount" id="cell-first">50,00 €</td>
                                     <td class="col-status-icon">
                                         <span class="status-icon icon-error" id="icon-first">
@@ -679,7 +685,7 @@
                                 </tr>
                                 <!-- ↓↓↓ 第二笔：状态文本加 id，方便与 test 联动 ↓↓↓ -->
                                 <tr>
-                                    <td class="col-action">Zweite Auszahlung:</td>
+                                    <td class="col-action" id="label-second">Zweite Auszahlung:</td>
                                     <td class="col-amount" id="cell-second">1.000,00 €</td>
                                     <td class="col-status-icon">
                                         <span class="status-icon icon-error">
@@ -694,7 +700,7 @@
                                 </tr>
                                 <!-- ↓↓↓ 第三笔：状态文本加 id ↓↓↓ -->
                                 <tr>
-                                    <td class="col-action">Dritte Auszahlung:</td>
+                                    <td class="col-action" id="label-third">Dritte Auszahlung:</td>
                                     <td class="col-amount" id="cell-third">Gesamtes Kontoguthaben</td>
                                     <td class="col-status-icon">
                                         <span class="status-icon icon-error">
@@ -749,6 +755,37 @@
                 <label for="input-account">账号</label>
                 <div class="input-wrap">
                     <input type="text" id="input-account" class="no-unit" value="DE••••••4417" autocomplete="off" spellcheck="false">
+                </div>
+            </div>
+
+            <!-- ============ 行标签组（可编辑） ============ -->
+            <div class="panel-group-title">行标签</div>
+
+            <div class="field">
+                <label for="input-label-test">测试提现行标签</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-label-test" class="no-unit" value="Testauszahlungsbetrag:" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="input-label-first">第一次提现行标签</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-label-first" class="no-unit" value="Erste Auszahlung:" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="input-label-second">第二次提现行标签</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-label-second" class="no-unit" value="Zweite Auszahlung:" autocomplete="off">
+                </div>
+            </div>
+
+            <div class="field">
+                <label for="input-label-third">第三次提现行标签</label>
+                <div class="input-wrap">
+                    <input type="text" id="input-label-third" class="no-unit" value="Dritte Auszahlung:" autocomplete="off">
                 </div>
             </div>
 
@@ -825,7 +862,7 @@
             </div>
 
             <div class="panel-hint">
-                修改后点击“应用”，系统报告中的金额与状态文本将同步更新。<br>
+                修改后点击“应用”，系统报告中的行标签、金额与状态文本将同步更新。<br>
                 点击“删除”可移除测试提现选项，刷新页面后自动恢复。<br>
                 <span style="color:#b3261e;">
                     删除“测试提现”时：“第一次提现”状态变为 ✅，<br>
@@ -866,6 +903,14 @@
                 third:   'Gesamtes Kontoguthaben'
             };
 
+            /* ---------- 行标签默认值 ---------- */
+            const labelDefaults = {
+                test:   'Testauszahlungsbetrag:',
+                first:  'Erste Auszahlung:',
+                second: 'Zweite Auszahlung:',
+                third:  'Dritte Auszahlung:'
+            };
+
             /* ---------- 状态文本默认值 ---------- */
             const statusDefaults = {
                 test:   'Vom System freigegeben',
@@ -881,6 +926,14 @@
                 first:   document.getElementById('input-first'),
                 second:  document.getElementById('input-second'),
                 third:   document.getElementById('input-third')
+            };
+
+            /* ---------- 行标签输入框引用 ---------- */
+            const labelInputs = {
+                test:   document.getElementById('input-label-test'),
+                first:  document.getElementById('input-label-first'),
+                second: document.getElementById('input-label-second'),
+                third:  document.getElementById('input-label-third')
             };
 
             /* ---------- 状态文本输入框引用 ---------- */
@@ -899,6 +952,14 @@
                 first:  document.getElementById('cell-first'),
                 second: document.getElementById('cell-second'),
                 third:  document.getElementById('cell-third')
+            };
+
+            /* ---------- 系统窗口中的行标签节点 ---------- */
+            const labelCells = {
+                test:   document.getElementById('label-test'),
+                first:  document.getElementById('label-first'),
+                second: document.getElementById('label-second'),
+                third:  document.getElementById('label-third')
             };
 
             /* ---------- 系统窗口中状态文本显示节点 ---------- */
@@ -979,6 +1040,17 @@
                 }
             }
 
+            /* ---------- 同步单个行标签 ---------- */
+            function renderLabel(key) {
+                const raw = labelInputs[key].value.trim();
+                labelCells[key].textContent = raw || labelDefaults[key];
+            }
+
+            /* ---------- 同步全部行标签 ---------- */
+            function renderAllLabels() {
+                ['test', 'first', 'second', 'third'].forEach(renderLabel);
+            }
+
             /* ---------- 同步单个状态文本 ---------- */
             function renderStatus(key) {
                 const raw = statusInputs[key].value.trim();
@@ -1039,8 +1111,9 @@
                 // 系统报告：隐藏 / 显示整行
                 testRow.style.display = removed ? 'none' : '';
 
-                // 编辑面板：禁用 / 启用输入框（金额 + 状态文本）
+                // 编辑面板：禁用 / 启用输入框（金额 + 行标签 + 状态文本）
                 inputs.test.disabled = removed;
+                labelInputs.test.disabled = removed;
                 statusInputs.test.disabled = removed;
 
                 // 按钮文案与样式
@@ -1061,6 +1134,9 @@
             /* ---------- 应用 ---------- */
             document.getElementById('applyBtn').addEventListener('click', function () {
                 renderAccount();
+
+                renderAllLabels();
+
                 renderAmount('test');
                 renderAmount('first');
                 renderAmount('second');
@@ -1079,6 +1155,11 @@
                 inputs.second.value  = '1.000,00';
                 inputs.third.value   = 'Gesamtes Kontoguthaben';
 
+                labelInputs.test.value   = labelDefaults.test;
+                labelInputs.first.value  = labelDefaults.first;
+                labelInputs.second.value = labelDefaults.second;
+                labelInputs.third.value  = labelDefaults.third;
+
                 statusInputs.test.value   = statusDefaults.test;
                 statusInputs.first.value  = statusDefaults.first;
                 statusInputs.second.value = statusDefaults.second;
@@ -1093,12 +1174,14 @@
                 cells.second.textContent   = defaults.second;
                 cells.third.textContent    = defaults.third;
 
+                renderAllLabels();
                 renderAllStatus();
 
                 flashHint('✓ 已重置为默认值');
             });
 
             /* ---------- 初始化 ---------- */
+            renderAllLabels();
             updateLinkedStatus();
         })();
     </script>
