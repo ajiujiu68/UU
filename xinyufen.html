@@ -300,7 +300,7 @@
       amount: parseFloat(amount),
       status: 'success',
       reason: '',
-      release: Math.random() > 0.5 ? 'auto' : 'manual',
+      release: 'auto', // ← 全部默认 Systemautomatik
       apply: toLocalISO(new Date(applyTime)),
       update: toLocalISO(new Date(updateTime))
     });
