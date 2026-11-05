@@ -63,9 +63,16 @@
   tbody tr.selected td{border-bottom-color:rgba(29,78,216,.15)}
   tbody tr:last-child td{border-bottom:none}
   .cell-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;color:var(--text)}
-  .cell-account{display:flex;align-items:center;gap:8px;font-weight:500;color:var(--text)}
-  .account-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
+  
+  /* 【修复核心】移除 td 的 flex 属性，恢复表格自带的基线和垂直居中 */
+  .cell-account{font-weight:500;color:var(--text)}
+  /* 【修复核心】改用 inline-flex，并加 vertical-align，让头像和旁边的文字完美处于同一水平线 */
+  .account-dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;vertical-align:middle;margin-right:8px}
+  
   .cell-amount{font-weight:600;color:var(--text)}
+  /* 方案三：给金额列设置最小宽度，防止被相邻长内容挤压 */
+  thead th[data-sort="amount"],
+  .cell-amount{min-width:140px;white-space:nowrap}
   .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;font-size:11.5px;font-weight:600;border-radius:6px;white-space:nowrap}
   .badge i{font-size:12px}
   .badge-success{color:var(--success);background:var(--success-soft);border:1px solid var(--success-border)}
@@ -156,7 +163,7 @@
       <table>
         <thead>
           <tr>
-            <th data-sort="id">Auftrags-ID<span class="sort">↕</span></th>
+            <th data-sort="id">Auftrags-ID<span class="sort">↑</span></th>
             <th data-sort="account">Benutzerkonto<span class="sort">↕</span></th>
             <th data-sort="amount">Betrag<span class="sort">↕</span></th>
             <th>Status</th>
@@ -267,18 +274,6 @@
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
   };
 
-  // 随机且唯一的订单号生成（10 位随机数字 + oFs 后缀，Set 去重防止碰撞）
-  var usedIds = new Set();
-  function randomOrderId(){
-    var digits;
-    do {
-      digits = '';
-      for (var k = 0; k < 10; k++) digits += Math.floor(Math.random() * 10);
-    } while (usedIds.has(digits));
-    usedIds.add(digits);
-    return '268' + digits + 'oFs';
-  }
-
   // 生成 165,351 条虚拟数据
   var TOTAL_ROWS = 165351;
   var rows = [];
@@ -300,7 +295,7 @@
     var updateTime = applyTime + processMins * 60 * 1000;
     
     rows.push({
-      id: randomOrderId(),
+      id: '26807085' + String(649 + i).padStart(5, '0') + 'oFs',
       account: acc,
       amount: parseFloat(amount),
       status: 'success',
@@ -312,11 +307,11 @@
   }
 
   var selectedId = rows[0].id;
-  // 默认按申请时间倒序（最新在最前），这样随机 ID 不会打乱初始页
-  var sortKey = 'apply', sortDir = -1;
+  var sortKey = 'id', sortDir = 1;
   var pageSize = 7, currentPage = 1;
 
-  function fmtEUR(n){return '€ ' + n.toFixed(2).replace('.',',');}
+  // 方案一：使用不间断空格 \u00A0，强制 € 与数字同处一行
+  function fmtEUR(n){return '€\u00A0' + n.toFixed(2).replace('.',',');}
   function fmtDT(s){
     if(!s) return '<span class="d">—</span>';
     var d = new Date(s); if(isNaN(d)) return s;
@@ -587,11 +582,6 @@
   document.getElementById('exportBtn').addEventListener('click', function(){
     flashBadge('CSV vorbereitet ✓');
   });
-
-  // 初始化默认排序指示
-  var defaultTh = document.querySelector('thead th[data-sort="apply"]');
-  defaultTh.classList.add('sorted');
-  defaultTh.querySelector('.sort').textContent = '↓';
 
   document.getElementById('lastUpdate').textContent = fmtShort(new Date());
   render();
