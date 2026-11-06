@@ -54,7 +54,7 @@
   table{width:100%;min-width:920px;border-collapse:collapse;font-size:13.5px}
   thead th{padding:11px 16px;text-align:left;font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);background:#f8fafc;border-bottom:1px solid var(--border);white-space:nowrap;user-select:none;cursor:pointer}
   thead th:hover{color:var(--text)}
-  thead th .sort{display:inline-block;margin-left:4px;font-size:10px;opacity:.4}
+  thead th .sort{display:inline-flex;align-items:center;justify-content:center;width:16px;height:16px;margin-left:4px;font-size:10px;opacity:.4;transition:opacity .15s}
   thead th.sorted .sort{opacity:1;color:var(--accent)}
   tbody td{padding:13px 16px;border-bottom:1px solid rgba(15,23,42,.05);vertical-align:middle;color:#334155;font-variant-numeric:tabular-nums}
   tbody tr{cursor:pointer;transition:background .12s}
@@ -62,28 +62,27 @@
   tbody tr.selected{background:var(--accent-soft)}
   tbody tr.selected td{border-bottom-color:rgba(29,78,216,.15)}
   tbody tr:last-child td{border-bottom:none}
-  .cell-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;color:var(--text)}
+  .cell-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;}
   
-  /* 【修复核心】移除 td 的 flex 属性，恢复表格自带的基线和垂直居中 */
-  .cell-account{font-weight:500;color:var(--text)}
-  /* 【修复核心】改用 inline-flex，并加 vertical-align，让头像和旁边的文字完美处于同一水平线 */
-  .account-dot{width:26px;height:26px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0;vertical-align:middle;margin-right:8px}
+  /* 【修复】改用 Flex 布局，完美解决长文本换行和头像对齐问题 */
+  .cell-account { font-weight: 500; color: var(--text); max-width: 260px; }
+  .account-inner { display: flex; align-items: center; gap: 8px; }
+  .account-text { word-break: break-all; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .account-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
   
-  .cell-amount{font-weight:600;color:var(--text)}
-  /* 方案三：给金额列设置最小宽度，防止被相邻长内容挤压 */
-  thead th[data-sort="amount"],
-  .cell-amount{min-width:140px;white-space:nowrap}
+  .cell-amount{font-weight:600;color:var(--text);white-space:nowrap;}
+  thead th[data-sort="amount"], .cell-amount{min-width:120px}
   .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;font-size:11.5px;font-weight:600;border-radius:6px;white-space:nowrap}
   .badge i{font-size:12px}
   .badge-success{color:var(--success);background:var(--success-soft);border:1px solid var(--success-border)}
   .badge-warning{color:var(--warning);background:var(--warning-soft);border:1px solid var(--warning-border)}
   .badge-danger{color:var(--danger);background:var(--danger-soft);border:1px solid var(--danger-border)}
   .badge-neutral{color:var(--neutral);background:var(--neutral-soft);border:1px solid var(--neutral-border)}
-  .reason-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;font-size:11.5px;font-weight:500;color:var(--danger);background:#fef2f2;border:1px solid var(--danger-border);border-radius:6px}
+  .reason-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;font-size:11.5px;font-weight:500;color:var(--danger);background:#fef2f2;border:1px solid var(--danger-border);border-radius:6px;white-space:nowrap}
   .reason-tag i{font-size:12px}
-  .release-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;font-size:11.5px;font-weight:500;color:#1e40af;background:var(--accent-soft);border:1px solid rgba(29,78,216,.2);border-radius:6px}
+  .release-tag{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;font-size:11.5px;font-weight:500;color:#1e40af;background:var(--accent-soft);border:1px solid rgba(29,78,216,.2);border-radius:6px;white-space:nowrap}
   .release-tag i{font-size:12px}
-  .cell-time{font-size:12.5px;line-height:1.4}
+  .cell-time{font-size:12.5px;line-height:1.4;white-space:nowrap;}
   .cell-time .d{font-weight:500;color:var(--text)}
   .cell-time .t{color:var(--muted);font-size:11.5px}
   .table-footer{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;padding:12px 20px;border-top:1px solid var(--border);font-size:12.5px;color:var(--muted)}
@@ -163,7 +162,7 @@
       <table>
         <thead>
           <tr>
-            <th data-sort="id">Auftrags-ID<span class="sort">↑</span></th>
+            <th data-sort="id">Auftrags-ID<span class="sort">↕</span></th>
             <th data-sort="account">Benutzerkonto<span class="sort">↕</span></th>
             <th data-sort="amount">Betrag<span class="sort">↕</span></th>
             <th>Status</th>
@@ -196,7 +195,7 @@
       </div>
       <div class="field">
         <label for="edAmount"><i class="ri-euro-line"></i>金额 (€)</label>
-        <input type="number" id="edAmount" step="0.01" min="0" placeholder="0,00">
+        <input type="number" id="edAmount" step="0.01" min="0" max="9999999" placeholder="0,00">
       </div>
       <div class="field">
         <label for="edStatus"><i class="ri-flag-line"></i>状态</label>
@@ -247,198 +246,187 @@
     <div>© 2026 TrustScore Platform GmbH · Alle Rechte vorbehalten</div>
     <div style="display:flex;gap:16px">
       <a>Impressum</a><a>Datenschutz</a><a>AGB</a><a>Support</a>
-      <span>v2.4.1</span>
+      <span>v2.5.0</span>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  var STATUS_META = {
+  // --- 安全与工具函数 ---
+  const escapeHTML = (str) => String(str).replace(/[&<>'"]/g, 
+    tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
+
+  const debounce = (func, wait) => {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => { clearTimeout(timeout); func(...args); };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  };
+
+  const STATUS_META = {
     success:  {label:'Erfolgreich',    cls:'badge-success', icon:'ri-checkbox-circle-fill'},
     pending:  {label:'In Bearbeitung', cls:'badge-warning', icon:'ri-time-line'},
     failed:   {label:'Fehlgeschlagen', cls:'badge-danger',  icon:'ri-close-circle-fill'},
     cancelled:{label:'Storniert',      cls:'badge-neutral', icon:'ri-stop-circle-line'}
   };
-  var RELEASE_META = {
+  const RELEASE_META = {
     auto:  {label:'Systemautomatik', icon:'ri-robot-line'},
     manual:{label:'Manuell',         icon:'ri-user-shared-line'},
     none:  {label:'—',               icon:''}
   };
   
-  var AVATAR_COLORS = ['#6366f1','#0ea5e9','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16'];
-  var accounts = ['mi.vlasova@gmx.de', 'joahimans36@yahoo.com', 'Sabine.oo83@gmx.de', 'raginikumari965@gmail.com', 'PameGlen@gmail.com', 'Brix@gmx.de', 'v6_0c4sFm_I08Fh'];
+  const AVATAR_COLORS = ['#6366f1','#0ea5e9','#f59e0b','#10b981','#ef4444','#8b5cf6','#ec4899','#14b8a6','#f97316','#84cc16'];
+  const accounts = ['mi.vlasova@gmx.de', 'joahimans36@yahoo.com', 'Sabine.oo83@gmx.de', 'raginikumari965@gmail.com', 'PameGlen@gmail.com', 'Brix@gmx.de', 'v6_0c4sFm_I08Fh'];
   
-  var p = function(n){return String(n).padStart(2,'0');};
-  var toLocalISO = function(d){
+  const p = (n) => String(n).padStart(2,'0');
+  const toLocalISO = (d) => {
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
   };
 
-  // 生成 165,351 条虚拟数据
-  var TOTAL_ROWS = 165351;
-  var rows = [];
-  var baseTime = Date.now();
-  var currentApplyTime = baseTime;
+  // --- 核心数据生成 (优化：避免循环内频繁创建 Date 对象) ---
+  const TOTAL_ROWS = 165351;
+  const rows = new Array(TOTAL_ROWS);
+  const rowMap = new Map(); // 优化查找性能 O(1)
+  let baseTime = Date.now();
+  let currentApplyTime = baseTime;
   
-  for (var i = 0; i < TOTAL_ROWS; i++) {
-    var acc = accounts[i % accounts.length];
-    var amount = (Math.random() * 400 + 10).toFixed(2);
+  for (let i = 0; i < TOTAL_ROWS; i++) {
+    const acc = accounts[i % accounts.length];
+    const amount = parseFloat((Math.random() * 400 + 10).toFixed(2));
     
     if (i > 0) {
-      // 初始列表：每行随机减去 1-4 分钟，模拟自然递减
-      currentApplyTime -= (Math.floor(Math.random() * 4) + 1) * 60 * 1000;
+      currentApplyTime -= (Math.floor(Math.random() * 4) + 1) * 60000;
     }
     
-    var applyTime = currentApplyTime;
-    // AKTUALISIERT 比 BEANTRAGT 随机晚 3-12 分钟
-    var processMins = Math.floor(Math.random() * 10) + 3;
-    var updateTime = applyTime + processMins * 60 * 1000;
+    const processMins = Math.floor(Math.random() * 10) + 3;
+    const updateTime = currentApplyTime + processMins * 60000;
     
-    rows.push({
+    const row = {
       id: '26807085' + String(649 + i).padStart(5, '0') + 'oFs',
       account: acc,
-      amount: parseFloat(amount),
+      amount: amount,
       status: 'success',
       reason: '',
-      release: 'auto', // ← 全部默认 Systemautomatik
-      apply: toLocalISO(new Date(applyTime)),
+      release: 'auto',
+      apply: toLocalISO(new Date(currentApplyTime)),
       update: toLocalISO(new Date(updateTime))
-    });
+    };
+    rows[i] = row;
+    rowMap.set(row.id, row);
   }
 
-  var selectedId = rows[0].id;
-  var sortKey = 'id', sortDir = 1;
-  var pageSize = 7, currentPage = 1;
+  // --- 状态变量 ---
+  let selectedId = rows[0].id;
+  let sortKey = 'id', sortDir = 1;
+  const pageSize = 7, currentPage = 1;
+  
+  // 缓存过滤和排序后的结果，避免每次 render 都重新计算 16w 条数据
+  let processedData = [...rows]; 
 
-  // 方案一：使用不间断空格 \u00A0，强制 € 与数字同处一行
-  function fmtEUR(n){return '€\u00A0' + n.toFixed(2).replace('.',',');}
-  function fmtDT(s){
+  // --- DOM 元素 ---
+  const tbody = document.getElementById('tableBody');
+  const pagEl = document.getElementById('pagination');
+  const searchInput = document.getElementById('searchInput');
+  const statusFilter = document.getElementById('statusFilter');
+  
+  const f = {
+    account: document.getElementById('edAccount'),
+    amount: document.getElementById('edAmount'),
+    status: document.getElementById('edStatus'),
+    release: document.getElementById('edRelease'),
+    reason: document.getElementById('edReason'),
+    apply: document.getElementById('edApply'),
+    update: document.getElementById('edUpdate')
+  };
+
+  // --- 渲染函数 ---
+  function fmtEUR(n) { return '€\u00A0' + n.toFixed(2).replace('.',','); }
+  function fmtDT(s) {
     if(!s) return '<span class="d">—</span>';
-    var d = new Date(s); if(isNaN(d)) return s;
+    const d = new Date(s); if(isNaN(d)) return escapeHTML(s);
     return '<span class="d">'+p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+'</span><br><span class="t">'+p(d.getHours())+':'+p(d.getMinutes())+' Uhr</span>';
   }
-  function fmtShort(s){
+  function fmtShort(s) {
     if(!s) return '—';
-    var d = new Date(s); if(isNaN(d)) return s;
+    const d = new Date(s); if(isNaN(d)) return escapeHTML(s);
     return p(d.getDate())+'.'+p(d.getMonth()+1)+'.'+d.getFullYear()+' '+p(d.getHours())+':'+p(d.getMinutes());
   }
-  function findRow(id){for(var i=0;i<rows.length;i++) if(rows[i].id===id) return rows[i]; return null;}
-  function avatarColor(name){
-    var h = 0; for(var i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 997;
+  function avatarColor(name) {
+    let h = 0; for(let i=0;i<name.length;i++) h = (h*31 + name.charCodeAt(i)) % 997;
     return AVATAR_COLORS[h % AVATAR_COLORS.length];
   }
-  function initials(name){
-    var parts = name.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/);
+  function initials(name) {
+    const parts = name.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/);
     if(parts.length>=2 && parts[0][0] && parts[1][0]) return (parts[0][0]+parts[1][0]).toUpperCase();
     return name.slice(0,2).toUpperCase();
   }
 
-  var tbody = document.getElementById('tableBody');
-  var pagEl = document.getElementById('pagination');
-
-  function getFiltered(){
-    var q = (document.getElementById('searchInput').value||'').toLowerCase().trim();
-    var st = document.getElementById('statusFilter').value;
-    var list = rows.filter(function(r){
-      if(st && r.status!==st) return false;
-      if(q && r.id.toLowerCase().indexOf(q)===-1 && r.account.toLowerCase().indexOf(q)===-1) return false;
-      return true;
-    });
-    list.sort(function(a,b){
-      var va = a[sortKey], vb = b[sortKey];
-      if(typeof va==='number') return (va-vb)*sortDir;
-      return String(va).localeCompare(String(vb))*sortDir;
-    });
-    return list;
-  }
-
-  function ensureSelectedVisible(list){
-    if(!selectedId) return;
-    var pos = -1;
-    for(var i=0;i<list.length;i++){ if(list[i].id===selectedId){pos=i;break;} }
-    if(pos>=0){
-      var needPage = Math.floor(pos/pageSize)+1;
-      if(needPage!==currentPage) currentPage = needPage;
-    }
-  }
-
-  function renderPagination(total){
-    var totalPages = Math.ceil(total / pageSize);
-    if(currentPage > totalPages) currentPage = totalPages;
-    if(currentPage < 1) currentPage = 1;
-
-    var html = '<button class="page-btn" data-page="prev"'+(currentPage===1?' disabled':'')+'><i class="ri-arrow-left-s-line"></i></button>';
+  function renderPagination(total) {
+    const totalPages = Math.ceil(total / pageSize);
+    let html = '<button class="page-btn" data-page="prev"'+(currentPage===1?' disabled':'')+'><i class="ri-arrow-left-s-line"></i></button>';
     
     if (totalPages <= 7) {
-      for (var i = 1; i <= totalPages; i++) {
+      for (let i = 1; i <= totalPages; i++) {
         html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
       }
     } else {
       if (currentPage <= 4) {
-        for (var i = 1; i <= 5; i++) {
-          html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
-        }
+        for (let i = 1; i <= 5; i++) html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
         html += '<span class="page-ellipsis">...</span>';
         html += '<button class="page-btn" data-page="'+totalPages+'">'+totalPages+'</button>';
       } else if (currentPage >= totalPages - 3) {
-        html += '<button class="page-btn" data-page="1">1</button>';
-        html += '<span class="page-ellipsis">...</span>';
-        for (var i = totalPages - 4; i <= totalPages; i++) {
-          html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
-        }
+        html += '<button class="page-btn" data-page="1">1</button><span class="page-ellipsis">...</span>';
+        for (let i = totalPages - 4; i <= totalPages; i++) html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
       } else {
-        html += '<button class="page-btn" data-page="1">1</button>';
-        html += '<span class="page-ellipsis">...</span>';
-        for (var i = currentPage - 1; i <= currentPage + 1; i++) {
-          html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
-        }
-        html += '<span class="page-ellipsis">...</span>';
-        html += '<button class="page-btn" data-page="'+totalPages+'">'+totalPages+'</button>';
+        html += '<button class="page-btn" data-page="1">1</button><span class="page-ellipsis">...</span>';
+        for (let i = currentPage - 1; i <= currentPage + 1; i++) html += '<button class="page-btn'+(i===currentPage?' active':'')+'" data-page="'+i+'">'+i+'</button>';
+        html += '<span class="page-ellipsis">...</span><button class="page-btn" data-page="'+totalPages+'">'+totalPages+'</button>';
       }
     }
-    
     html += '<button class="page-btn" data-page="next"'+(currentPage===totalPages?' disabled':'')+'><i class="ri-arrow-right-s-line"></i></button>';
     pagEl.innerHTML = html;
-    
-    pagEl.querySelectorAll('.page-btn').forEach(function(btn){
-      btn.addEventListener('click', function(){
-        if(btn.disabled) return;
-        var pg = btn.dataset.page;
-        if(pg==='prev') currentPage--;
-        else if(pg==='next') currentPage++;
-        else currentPage = parseInt(pg,10);
-        render();
-      });
-    });
   }
 
-  function render(){
-    var list = getFiltered();
-    var total = list.length;
-    ensureSelectedVisible(list);
-    
+  // 核心渲染逻辑
+  function render() {
+    const total = processedData.length;
     document.getElementById('resultCount').textContent = total + ' Aufträge';
     
+    // 修正当前页，防止数据过滤后越界
+    const totalPages = Math.ceil(total / pageSize);
+    if (currentPage > totalPages) window.currentPage = Math.max(1, totalPages);
+
     renderPagination(total);
-    var start = (currentPage-1)*pageSize;
-    var pageList = list.slice(start, start+pageSize);
+    
+    const start = (window.currentPage - 1) * pageSize;
+    const pageList = processedData.slice(start, start + pageSize);
     
     if(!pageList.length){
       tbody.innerHTML = '<tr><td colspan="8"><div class="empty-state"><i class="ri-inbox-line"></i>Keine Aufträge gefunden</div></td></tr>';
       return;
     }
-    tbody.innerHTML = pageList.map(function(r){
-      var isSel = (r.id===selectedId);
-      var sm = STATUS_META[r.status], rm = RELEASE_META[r.release];
-      var reasonHtml = r.reason
-        ? '<span class="reason-tag"><i class="ri-alert-line"></i>'+r.reason+'</span>'
+
+    tbody.innerHTML = pageList.map(r => {
+      const isSel = (r.id === selectedId);
+      const sm = STATUS_META[r.status], rm = RELEASE_META[r.release];
+      
+      // 安全处理用户输入
+      const safeAccount = escapeHTML(r.account);
+      
+      const reasonHtml = r.reason
+        ? '<span class="reason-tag"><i class="ri-alert-line"></i>'+escapeHTML(r.reason)+'</span>'
         : '<span style="color:#cbd5e1">—</span>';
-      var releaseHtml = r.release!=='none'
+      const releaseHtml = r.release !== 'none'
         ? '<span class="release-tag"><i class="'+rm.icon+'"></i>'+rm.label+'</span>'
         : '<span style="color:#cbd5e1">—</span>';
+
+      // 应用 Flex 布局结构
       return '<tr data-id="'+r.id+'"'+(isSel?' class="selected"':'')+'>'
-        +'<td class="cell-id">'+r.id+'</td>'
-        +'<td class="cell-account"><span class="account-dot" style="background:'+avatarColor(r.account)+'">'+initials(r.account)+'</span>'+r.account+'</td>'
+        +'<td class="cell-id">'+escapeHTML(r.id)+'</td>'
+        +'<td class="cell-account"><div class="account-inner"><span class="account-dot" style="background:'+avatarColor(r.account)+'">'+initials(r.account)+'</span><span class="account-text">'+safeAccount+'</span></div></td>'
         +'<td class="cell-amount">'+fmtEUR(r.amount)+'</td>'
         +'<td><span class="badge '+sm.cls+'"><i class="'+sm.icon+'"></i>'+sm.label+'</span></td>'
         +'<td>'+reasonHtml+'</td>'
@@ -447,21 +435,56 @@
         +'<td class="cell-time">'+fmtDT(r.update)+'</td>'
         +'</tr>';
     }).join('');
+
+    // 重新绑定分页事件
+    pagEl.querySelectorAll('.page-btn').forEach(btn => {
+      btn.addEventListener('click', function(){
+        if(this.disabled) return;
+        const pg = this.dataset.page;
+        if(pg === 'prev') window.currentPage--;
+        else if(pg === 'next') window.currentPage++;
+        else window.currentPage = parseInt(pg,10);
+        render();
+      });
+    });
   }
 
-  var f = {
-    account:document.getElementById('edAccount'),
-    amount:document.getElementById('edAmount'),
-    status:document.getElementById('edStatus'),
-    release:document.getElementById('edRelease'),
-    reason:document.getElementById('edReason'),
-    apply:document.getElementById('edApply'),
-    update:document.getElementById('edUpdate')
-  };
-  
-  function fillForm(){
-    var r = findRow(selectedId);
-    if(!r){document.getElementById('editBadge').textContent='未选择订单';return;}
+  // 处理数据和排序 (防抖后调用)
+  function processData() {
+    const q = searchInput.value.toLowerCase().trim();
+    const st = statusFilter.value;
+    
+    // 1. 过滤
+    processedData = rows.filter(r => {
+      if(st && r.status !== st) return false;
+      if(q && r.id.toLowerCase().indexOf(q) === -1 && r.account.toLowerCase().indexOf(q) === -1) return false;
+      return true;
+    });
+
+    // 2. 排序 (针对过滤后的数据)
+    processedData.sort((a, b) => {
+      let va = a[sortKey], vb = b[sortKey];
+      if (sortKey === 'id' || sortKey === 'account') {
+        // 处理可能包含 null/undefined 的情况
+        va = va || ''; vb = vb || '';
+      }
+      if(typeof va === 'number') return (va - vb) * sortDir;
+      return String(va).localeCompare(String(vb)) * sortDir;
+    });
+
+    render();
+  }
+
+  // 防抖版过滤器
+  const debouncedProcessData = debounce(() => {
+    window.currentPage = 1; // 搜索重置页码
+    processData();
+  }, 300);
+
+  // --- 表单逻辑 ---
+  function fillForm() {
+    const r = rowMap.get(selectedId);
+    if(!r) { document.getElementById('editBadge').textContent='未选择订单'; return; }
     document.getElementById('editBadge').textContent = '订单 ' + r.id;
     f.account.value = r.account;
     f.amount.value = r.amount.toFixed(2);
@@ -472,119 +495,161 @@
     f.update.value = r.update;
   }
   
-  function flashBadge(msg){
-    var b = document.getElementById('editBadge');
-    var old = b.textContent;
+  function flashBadge(msg) {
+    const b = document.getElementById('editBadge');
+    const old = b.textContent;
     b.textContent = msg;
     b.style.background = 'var(--success-soft)';
     b.style.color = 'var(--success)';
     b.style.borderColor = 'var(--success-border)';
-    setTimeout(function(){
+    setTimeout(() => {
       b.textContent = old;
       b.style.background='';b.style.color='';b.style.borderColor='';
     },1500);
   }
 
-  function applyEdit(){
-    var r = findRow(selectedId);
+  function applyEdit() {
+    const r = rowMap.get(selectedId);
     if(!r) return;
     
-    r.account = f.account.value.trim() || r.account;
-    var amt = parseFloat(f.amount.value);
-    r.amount = (isNaN(amt)||amt<0) ? r.amount : amt;
+    // 应用修改并做安全校验
+    r.account = escapeHTML(f.account.value.trim() || r.account);
+    const amt = parseFloat(f.amount.value);
+    r.amount = (isNaN(amt) || amt < 0) ? r.amount : Math.min(amt, 9999999);
     r.status = f.status.value;
     r.release = f.release.value;
-    r.reason = f.reason.value;
+    r.reason = escapeHTML(f.reason.value);
 
-    var baseApplyStr = f.apply.value || r.apply;
-    var baseUpdateStr = f.update.value || r.update;
-    
-    var baseApplyTime = new Date(baseApplyStr).getTime();
+    const baseApplyStr = f.apply.value || r.apply;
+    const baseUpdateStr = f.update.value || r.update;
+    const baseApplyTime = new Date(baseApplyStr).getTime();
 
-    var currentIndex = -1;
-    for(var i=0; i<rows.length; i++) {
+    let currentIndex = -1;
+    for(let i=0; i<rows.length; i++) {
       if(rows[i].id === selectedId) { currentIndex = i; break; }
     }
 
-    // 设置当前行时间
     r.apply = baseApplyStr;
     r.update = baseUpdateStr;
 
-    // 向下遍历：随机递减 1-4 分钟
-    var prevApplyTime = baseApplyTime;
-    for (var i = currentIndex + 1; i < rows.length; i++) {
-        var offsetMins = Math.floor(Math.random() * 4) + 1; 
-        prevApplyTime -= offsetMins * 60 * 1000;
-        
+    // 优化：避免遍历 16 万条导致页面假死，限制只同步相邻 100 条
+    const syncLimit = 100;
+    let prevApplyTime = baseApplyTime;
+    for (let i = currentIndex + 1; i < Math.min(currentIndex + syncLimit, rows.length); i++) {
+        prevApplyTime -= (Math.floor(Math.random() * 4) + 1) * 60000;
         rows[i].apply = toLocalISO(new Date(prevApplyTime));
-        
-        var processMins = Math.floor(Math.random() * 10) + 3;
-        var updateTime = prevApplyTime + processMins * 60 * 1000;
-        rows[i].update = toLocalISO(new Date(updateTime));
+        rows[i].update = toLocalISO(new Date(prevApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000));
     }
 
-    // 向上遍历：随机递增 1-4 分钟
-    var nextApplyTime = baseApplyTime;
-    for (var i = currentIndex - 1; i >= 0; i--) {
-        var offsetMins = Math.floor(Math.random() * 4) + 1;
-        nextApplyTime += offsetMins * 60 * 1000;
-        
+    let nextApplyTime = baseApplyTime;
+    for (let i = currentIndex - 1; i >= Math.max(0, currentIndex - syncLimit); i--) {
+        nextApplyTime += (Math.floor(Math.random() * 4) + 1) * 60000;
         rows[i].apply = toLocalISO(new Date(nextApplyTime));
-        
-        var processMins = Math.floor(Math.random() * 10) + 3;
-        var updateTime = nextApplyTime + processMins * 60 * 1000;
-        rows[i].update = toLocalISO(new Date(updateTime));
+        rows[i].update = toLocalISO(new Date(nextApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000));
     }
 
-    render();
+    processData(); // 重新处理数据
     fillForm();
     flashBadge('已保存并同步时间 ✓');
   }
 
-  tbody.addEventListener('click', function(e){
-    var tr = e.target.closest('tr[data-id]');
+  // --- 事件绑定 ---
+  tbody.addEventListener('click', function(e) {
+    const tr = e.target.closest('tr[data-id]');
     if(!tr) return;
     selectedId = tr.dataset.id;
-    render(); fillForm();
+    // 优化：局部更新DOM状态，不必全量 render
+    document.querySelectorAll('tbody tr').forEach(el => el.classList.remove('selected'));
+    tr.classList.add('selected');
+    fillForm();
   });
   
   document.getElementById('applyBtn').addEventListener('click', applyEdit);
   document.getElementById('resetBtn').addEventListener('click', fillForm);
-  document.getElementById('searchInput').addEventListener('input', function(){currentPage=1;render();});
-  document.getElementById('statusFilter').addEventListener('change', function(){currentPage=1;render();});
   
-  Object.keys(f).forEach(function(k){
-    f[k].addEventListener('keydown', function(e){
-      if(e.key==='Enter'){e.preventDefault();applyEdit();}
+  // 搜索和筛选防抖
+  searchInput.addEventListener('input', debouncedProcessData);
+  statusFilter.addEventListener('change', debouncedProcessData);
+  
+  // 表单内回车事件（避免下拉框按回车意外触发）
+  Object.keys(f).forEach(k => {
+    f[k].addEventListener('keydown', function(e) {
+      if(e.key === 'Enter' && this.tagName !== 'SELECT') {
+        e.preventDefault();
+        applyEdit();
+      }
     });
   });
   
-  document.querySelectorAll('thead th[data-sort]').forEach(function(th){
-    th.addEventListener('click', function(){
-      var k = th.dataset.sort;
-      if(sortKey===k) sortDir*=-1; else {sortKey=k; sortDir=1;}
-      document.querySelectorAll('thead th').forEach(function(t){t.classList.remove('sorted');var s=t.querySelector('.sort');if(s)s.textContent='↕';});
-      th.classList.add('sorted');
-      th.querySelector('.sort').textContent = sortDir===1?'↑':'↓';
-      render();
+  // 表头排序
+  document.querySelectorAll('thead th[data-sort]').forEach(th => {
+    th.addEventListener('click', function() {
+      const k = this.dataset.sort;
+      if(sortKey === k) sortDir *= -1; else { sortKey = k; sortDir = 1; }
+      
+      document.querySelectorAll('thead th').forEach(t => {
+        t.classList.remove('sorted');
+        const s = t.querySelector('.sort');
+        if(s) s.textContent = '↕';
+      });
+      
+      this.classList.add('sorted');
+      this.querySelector('.sort').textContent = sortDir === 1 ? '↑' : '↓';
+      
+      processData();
     });
   });
   
-  document.getElementById('refreshBtn').addEventListener('click', function(){
-    var btn = this, icon = document.getElementById('refreshIcon'), txt = document.getElementById('refreshText');
+  // 刷新按钮
+  document.getElementById('refreshBtn').addEventListener('click', function() {
+    const btn = this, icon = document.getElementById('refreshIcon'), txt = document.getElementById('refreshText');
     btn.disabled = true; icon.classList.add('spin'); txt.textContent = '...';
-    setTimeout(function(){
+    setTimeout(() => {
       btn.disabled = false; icon.classList.remove('spin'); txt.textContent = 'Aktualisieren';
       document.getElementById('lastUpdate').textContent = fmtShort(new Date());
     }, 900);
   });
   
-  document.getElementById('exportBtn').addEventListener('click', function(){
+  // 真实的 CSV 导出
+  document.getElementById('exportBtn').addEventListener('click', function() {
+    const headers = ['Auftrags-ID', 'Benutzerkonto', 'Betrag', 'Status', 'Grund', 'Freigabe', 'Beantragt', 'Aktualisiert'];
+    const csvRows = [headers.join(',')];
+    
+    // 只导出当前过滤结果的前 5000 条，防止浏览器崩溃，实际生产应走后端导出
+    const exportData = processedData.slice(0, 5000); 
+    
+    exportData.forEach(r => {
+      const row = [
+        r.id,
+        `"${r.account}"`, 
+        r.amount.toFixed(2),
+        STATUS_META[r.status]?.label || r.status,
+        `"${r.reason}"`,
+        RELEASE_META[r.release]?.label || r.release,
+        r.apply,
+        r.update
+      ];
+      csvRows.push(row.join(','));
+    });
+
+    const csvString = csvRows.join('\n');
+    const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' }); // \uFEFF 防止 Excel 中文乱码
+    const link = document.createElement("a");
+    const url = URL.createObjectURL(blob);
+    link.setAttribute("href", url);
+    link.setAttribute("download", `auftraege_export_${fmtShort(new Date()).replace(/[:\s.]/g, '-')}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    
     flashBadge('CSV vorbereitet ✓');
   });
 
+  // --- 初始化 ---
   document.getElementById('lastUpdate').textContent = fmtShort(new Date());
-  render();
+  window.currentPage = 1; // 确保全局页码变量有效
+  processData();
   fillForm();
 })();
 </script>
