@@ -63,13 +63,10 @@
   tbody tr.selected td{border-bottom-color:rgba(29,78,216,.15)}
   tbody tr:last-child td{border-bottom:none}
   .cell-id{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;font-size:12.5px;font-weight:500;color:var(--text);white-space:nowrap;}
-  
-  /* 【修复】改用 Flex 布局，完美解决长文本换行和头像对齐问题 */
   .cell-account { font-weight: 500; color: var(--text); max-width: 260px; }
   .account-inner { display: flex; align-items: center; gap: 8px; }
   .account-text { word-break: break-all; line-height: 1.4; overflow: hidden; text-overflow: ellipsis; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
   .account-dot{width:26px;height:26px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:600;color:#fff;flex-shrink:0}
-  
   .cell-amount{font-weight:600;color:var(--text);white-space:nowrap;}
   thead th[data-sort="amount"], .cell-amount{min-width:120px}
   .badge{display:inline-flex;align-items:center;gap:5px;padding:3px 9px;font-size:11.5px;font-weight:600;border-radius:6px;white-space:nowrap}
@@ -181,7 +178,6 @@
     </div>
   </div>
 
-  <!-- 唯一的中文区域：编辑面板 -->
   <div class="edit-card">
     <div class="edit-head">
       <h3><i class="ri-edit-line"></i>编辑订单</h3>
@@ -220,10 +216,10 @@
           <option value="">— 无</option>
           <option value="Vertrauenspunkte < 100">信用分低于 100</option>
           <option value="Konto nicht verifiziert">账号未认证</option>
-          <option value="Betrag über Tageslimit">超出单日限额</option>
+          <option value="Rückerstattungscode abgelaufen">退款码过期</option>
           <option value="Ungültige Bankverbindung">银行信息无效</option>
           <option value="Vom Benutzer abgebrochen">用户取消</option>
-          <option value="Verdacht auf Betrug">涉嫌欺诈</option>
+          <option value="VIP-Kanal nicht aktiviert">未开通VIP通道</option>
           <option value="Sonstiger Grund">其他原因</option>
         </select>
       </div>
@@ -253,7 +249,6 @@
 
 <script>
 (function(){
-  // --- 安全与工具函数 ---
   const escapeHTML = (str) => String(str).replace(/[&<>'"]/g, 
     tag => ({'&': '&amp;', '<': '&lt;', '>': '&gt;', "'": '&#39;', '"': '&quot;'}[tag] || tag));
 
@@ -286,12 +281,14 @@
     return d.getFullYear()+'-'+p(d.getMonth()+1)+'-'+p(d.getDate())+'T'+p(d.getHours())+':'+p(d.getMinutes())+':'+p(d.getSeconds());
   };
 
-  // --- 核心数据生成 (优化：避免循环内频繁创建 Date 对象) ---
+  // --- 核心数据生成（加入了时间上限约束） ---
   const TOTAL_ROWS = 165351;
   const rows = new Array(TOTAL_ROWS);
-  const rowMap = new Map(); // 优化查找性能 O(1)
-  let baseTime = Date.now();
-  let currentApplyTime = baseTime;
+  const rowMap = new Map();
+  
+  let currentApplyTime = Date.now();
+  // 记录第一行数据的更新时间，作为全局最大时间限制 (即截图中的红框时间)
+  let maxGlobalUpdateTime = currentApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000;
   
   for (let i = 0; i < TOTAL_ROWS; i++) {
     const acc = accounts[i % accounts.length];
@@ -302,7 +299,13 @@
     }
     
     const processMins = Math.floor(Math.random() * 10) + 3;
-    const updateTime = currentApplyTime + processMins * 60000;
+    let calculatedUpdateTime = currentApplyTime + processMins * 60000;
+    
+    // 【关键修复】如果计算出的更新时间超过了第一行的基准时间，就强制压平到基准时间
+    // 这样保证后续所有行的时间都不会超过红框里的时间
+    if (calculatedUpdateTime > maxGlobalUpdateTime) {
+      calculatedUpdateTime = maxGlobalUpdateTime;
+    }
     
     const row = {
       id: '26807085' + String(649 + i).padStart(5, '0') + 'oFs',
@@ -312,21 +315,18 @@
       reason: '',
       release: 'auto',
       apply: toLocalISO(new Date(currentApplyTime)),
-      update: toLocalISO(new Date(updateTime))
+      update: toLocalISO(new Date(calculatedUpdateTime))
     };
     rows[i] = row;
     rowMap.set(row.id, row);
   }
 
-  // --- 状态变量 ---
   let selectedId = rows[0].id;
   let sortKey = 'id', sortDir = 1;
-  const pageSize = 7, currentPage = 1;
-  
-  // 缓存过滤和排序后的结果，避免每次 render 都重新计算 16w 条数据
-  let processedData = [...rows]; 
+  let currentPage = 1;
+  const pageSize = 7;
+  let processedData = [...rows];
 
-  // --- DOM 元素 ---
   const tbody = document.getElementById('tableBody');
   const pagEl = document.getElementById('pagination');
   const searchInput = document.getElementById('searchInput');
@@ -342,7 +342,6 @@
     update: document.getElementById('edUpdate')
   };
 
-  // --- 渲染函数 ---
   function fmtEUR(n) { return '€\u00A0' + n.toFixed(2).replace('.',','); }
   function fmtDT(s) {
     if(!s) return '<span class="d">—</span>';
@@ -361,7 +360,8 @@
   function initials(name) {
     const parts = name.split('@')[0].replace(/[^a-zA-Z]/g,' ').trim().split(/\s+/);
     if(parts.length>=2 && parts[0][0] && parts[1][0]) return (parts[0][0]+parts[1][0]).toUpperCase();
-    return name.slice(0,2).toUpperCase();
+    const fallback = name.replace(/[^a-zA-Z0-9]/g,'');
+    return (fallback.slice(0,2) || '??').toUpperCase();
   }
 
   function renderPagination(total) {
@@ -390,18 +390,16 @@
     pagEl.innerHTML = html;
   }
 
-  // 核心渲染逻辑
   function render() {
     const total = processedData.length;
     document.getElementById('resultCount').textContent = total + ' Aufträge';
     
-    // 修正当前页，防止数据过滤后越界
     const totalPages = Math.ceil(total / pageSize);
-    if (currentPage > totalPages) window.currentPage = Math.max(1, totalPages);
+    if (currentPage > totalPages) currentPage = Math.max(1, totalPages);
 
     renderPagination(total);
     
-    const start = (window.currentPage - 1) * pageSize;
+    const start = (currentPage - 1) * pageSize;
     const pageList = processedData.slice(start, start + pageSize);
     
     if(!pageList.length){
@@ -412,8 +410,6 @@
     tbody.innerHTML = pageList.map(r => {
       const isSel = (r.id === selectedId);
       const sm = STATUS_META[r.status], rm = RELEASE_META[r.release];
-      
-      // 安全处理用户输入
       const safeAccount = escapeHTML(r.account);
       
       const reasonHtml = r.reason
@@ -423,7 +419,6 @@
         ? '<span class="release-tag"><i class="'+rm.icon+'"></i>'+rm.label+'</span>'
         : '<span style="color:#cbd5e1">—</span>';
 
-      // 应用 Flex 布局结构
       return '<tr data-id="'+r.id+'"'+(isSel?' class="selected"':'')+'>'
         +'<td class="cell-id">'+escapeHTML(r.id)+'</td>'
         +'<td class="cell-account"><div class="account-inner"><span class="account-dot" style="background:'+avatarColor(r.account)+'">'+initials(r.account)+'</span><span class="account-text">'+safeAccount+'</span></div></td>'
@@ -436,52 +431,40 @@
         +'</tr>';
     }).join('');
 
-    // 重新绑定分页事件
     pagEl.querySelectorAll('.page-btn').forEach(btn => {
       btn.addEventListener('click', function(){
         if(this.disabled) return;
         const pg = this.dataset.page;
-        if(pg === 'prev') window.currentPage--;
-        else if(pg === 'next') window.currentPage++;
-        else window.currentPage = parseInt(pg,10);
+        if(pg === 'prev') currentPage--;
+        else if(pg === 'next') currentPage++;
+        else currentPage = parseInt(pg,10);
         render();
       });
     });
   }
 
-  // 处理数据和排序 (防抖后调用)
-  function processData() {
+  function processData(resetPage = true) {
+    if (resetPage) currentPage = 1;
     const q = searchInput.value.toLowerCase().trim();
     const st = statusFilter.value;
     
-    // 1. 过滤
     processedData = rows.filter(r => {
       if(st && r.status !== st) return false;
       if(q && r.id.toLowerCase().indexOf(q) === -1 && r.account.toLowerCase().indexOf(q) === -1) return false;
       return true;
     });
 
-    // 2. 排序 (针对过滤后的数据)
     processedData.sort((a, b) => {
       let va = a[sortKey], vb = b[sortKey];
-      if (sortKey === 'id' || sortKey === 'account') {
-        // 处理可能包含 null/undefined 的情况
-        va = va || ''; vb = vb || '';
-      }
-      if(typeof va === 'number') return (va - vb) * sortDir;
+      if (typeof va === 'number') return (va - vb) * sortDir;
       return String(va).localeCompare(String(vb)) * sortDir;
     });
 
     render();
   }
 
-  // 防抖版过滤器
-  const debouncedProcessData = debounce(() => {
-    window.currentPage = 1; // 搜索重置页码
-    processData();
-  }, 300);
+  const debouncedProcessData = debounce(() => processData(true), 300);
 
-  // --- 表单逻辑 ---
   function fillForm() {
     const r = rowMap.get(selectedId);
     if(!r) { document.getElementById('editBadge').textContent='未选择订单'; return; }
@@ -497,13 +480,14 @@
   
   function flashBadge(msg) {
     const b = document.getElementById('editBadge');
-    const old = b.textContent;
+    const r = rowMap.get(selectedId);
+    const restore = r ? '订单 ' + r.id : '—';
     b.textContent = msg;
     b.style.background = 'var(--success-soft)';
     b.style.color = 'var(--success)';
     b.style.borderColor = 'var(--success-border)';
     setTimeout(() => {
-      b.textContent = old;
+      b.textContent = restore;
       b.style.background='';b.style.color='';b.style.borderColor='';
     },1500);
   }
@@ -512,53 +496,55 @@
     const r = rowMap.get(selectedId);
     if(!r) return;
     
-    // 应用修改并做安全校验
-    r.account = escapeHTML(f.account.value.trim() || r.account);
+    const rawAccount = f.account.value.trim();
+    if (rawAccount) r.account = rawAccount;
     const amt = parseFloat(f.amount.value);
-    r.amount = (isNaN(amt) || amt < 0) ? r.amount : Math.min(amt, 9999999);
+    if (!isNaN(amt) && amt >= 0) r.amount = Math.min(amt, 9999999);
     r.status = f.status.value;
     r.release = f.release.value;
-    r.reason = escapeHTML(f.reason.value);
+    r.reason = f.reason.value;
 
     const baseApplyStr = f.apply.value || r.apply;
     const baseUpdateStr = f.update.value || r.update;
     const baseApplyTime = new Date(baseApplyStr).getTime();
 
-    let currentIndex = -1;
-    for(let i=0; i<rows.length; i++) {
-      if(rows[i].id === selectedId) { currentIndex = i; break; }
-    }
+    const currentIndex = rows.indexOf(r);
 
     r.apply = baseApplyStr;
     r.update = baseUpdateStr;
 
-    // 优化：避免遍历 16 万条导致页面假死，限制只同步相邻 100 条
     const syncLimit = 100;
     let prevApplyTime = baseApplyTime;
+    // 同步后方数据时，加入上限判断
     for (let i = currentIndex + 1; i < Math.min(currentIndex + syncLimit, rows.length); i++) {
         prevApplyTime -= (Math.floor(Math.random() * 4) + 1) * 60000;
+        let calcUpd = prevApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000;
+        if (calcUpd > maxGlobalUpdateTime) calcUpd = maxGlobalUpdateTime;
+        
         rows[i].apply = toLocalISO(new Date(prevApplyTime));
-        rows[i].update = toLocalISO(new Date(prevApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000));
+        rows[i].update = toLocalISO(new Date(calcUpd));
     }
 
     let nextApplyTime = baseApplyTime;
+    // 同步前方数据时，同样加入上限判断
     for (let i = currentIndex - 1; i >= Math.max(0, currentIndex - syncLimit); i--) {
         nextApplyTime += (Math.floor(Math.random() * 4) + 1) * 60000;
+        let calcUpd = nextApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000;
+        if (calcUpd > maxGlobalUpdateTime) calcUpd = maxGlobalUpdateTime;
+        
         rows[i].apply = toLocalISO(new Date(nextApplyTime));
-        rows[i].update = toLocalISO(new Date(nextApplyTime + (Math.floor(Math.random() * 10) + 3) * 60000));
+        rows[i].update = toLocalISO(new Date(calcUpd));
     }
 
-    processData(); // 重新处理数据
+    processData(false);
     fillForm();
     flashBadge('已保存并同步时间 ✓');
   }
 
-  // --- 事件绑定 ---
   tbody.addEventListener('click', function(e) {
     const tr = e.target.closest('tr[data-id]');
     if(!tr) return;
     selectedId = tr.dataset.id;
-    // 优化：局部更新DOM状态，不必全量 render
     document.querySelectorAll('tbody tr').forEach(el => el.classList.remove('selected'));
     tr.classList.add('selected');
     fillForm();
@@ -567,11 +553,9 @@
   document.getElementById('applyBtn').addEventListener('click', applyEdit);
   document.getElementById('resetBtn').addEventListener('click', fillForm);
   
-  // 搜索和筛选防抖
   searchInput.addEventListener('input', debouncedProcessData);
   statusFilter.addEventListener('change', debouncedProcessData);
   
-  // 表单内回车事件（避免下拉框按回车意外触发）
   Object.keys(f).forEach(k => {
     f[k].addEventListener('keydown', function(e) {
       if(e.key === 'Enter' && this.tagName !== 'SELECT') {
@@ -581,7 +565,6 @@
     });
   });
   
-  // 表头排序
   document.querySelectorAll('thead th[data-sort]').forEach(th => {
     th.addEventListener('click', function() {
       const k = this.dataset.sort;
@@ -596,11 +579,10 @@
       this.classList.add('sorted');
       this.querySelector('.sort').textContent = sortDir === 1 ? '↑' : '↓';
       
-      processData();
+      processData(true);
     });
   });
   
-  // 刷新按钮
   document.getElementById('refreshBtn').addEventListener('click', function() {
     const btn = this, icon = document.getElementById('refreshIcon'), txt = document.getElementById('refreshText');
     btn.disabled = true; icon.classList.add('spin'); txt.textContent = '...';
@@ -610,21 +592,18 @@
     }, 900);
   });
   
-  // 真实的 CSV 导出
   document.getElementById('exportBtn').addEventListener('click', function() {
     const headers = ['Auftrags-ID', 'Benutzerkonto', 'Betrag', 'Status', 'Grund', 'Freigabe', 'Beantragt', 'Aktualisiert'];
     const csvRows = [headers.join(',')];
-    
-    // 只导出当前过滤结果的前 5000 条，防止浏览器崩溃，实际生产应走后端导出
-    const exportData = processedData.slice(0, 5000); 
+    const exportData = processedData.slice(0, 5000);
     
     exportData.forEach(r => {
       const row = [
         r.id,
-        `"${r.account}"`, 
+        `"${String(r.account).replace(/"/g,'""')}"`,
         r.amount.toFixed(2),
         STATUS_META[r.status]?.label || r.status,
-        `"${r.reason}"`,
+        `"${String(r.reason).replace(/"/g,'""')}"`,
         RELEASE_META[r.release]?.label || r.release,
         r.apply,
         r.update
@@ -633,7 +612,7 @@
     });
 
     const csvString = csvRows.join('\n');
-    const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' }); // \uFEFF 防止 Excel 中文乱码
+    const blob = new Blob(["\uFEFF" + csvString], { type: 'text/csv;charset=utf-8;' });
     const link = document.createElement("a");
     const url = URL.createObjectURL(blob);
     link.setAttribute("href", url);
@@ -646,12 +625,10 @@
     flashBadge('CSV vorbereitet ✓');
   });
 
-  // --- 初始化 ---
   document.getElementById('lastUpdate').textContent = fmtShort(new Date());
-  window.currentPage = 1; // 确保全局页码变量有效
-  processData();
+  processData(true);
   fillForm();
 })();
 </script>
 </body>
-</html>
+</html> 	
