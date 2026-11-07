@@ -485,9 +485,6 @@
       <div class="note-display" id="note-display" role="status" aria-live="polite">
         <i class="ri-sticky-note-fill" aria-hidden="true" style="color:#b8860b;font-size:18px;flex-shrink:0;"></i>
         <div id="note-text" style="flex:1;font-size:13.5px;color:#5a4a1a;line-height:1.6;word-break:break-word;"></div>
-        <button type="button" id="note-clear" class="note-close" aria-label="Notiz löschen" title="Notiz löschen">
-          <i class="ri-close-line" aria-hidden="true" style="font-size:18px;"></i>
-        </button>
       </div>
       </section>
 
@@ -1314,7 +1311,10 @@
       toggleNote();
     });
 
-    $('note-clear').addEventListener('click', clearNote);
+    // 备注框中的“清除”按钮已移除；此处加保护，元素不存在时不会报错
+    var noteClearBtn = $('note-clear');
+    if (noteClearBtn) noteClearBtn.addEventListener('click', clearNote);
+
     $('reset-btn').addEventListener('click', resetAll);
 
     var showBtn = $('note-show-btn');
