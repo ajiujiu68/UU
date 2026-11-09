@@ -7,6 +7,8 @@
     <meta name="color-scheme" content="light">
     <meta name="description" content="Versicherungsvertrag - Versicherungsbedingungen für das Plattform-Konto">
     <title>保险</title>
+    <!-- 引入 html2canvas 截图库 -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
     <style>
         /* ================= 全局样式 ================= */
         :root {
@@ -257,12 +259,142 @@
                 margin: 15mm;
             }
         }
+
+        /* ================= 新增：悬浮截图按钮与模态框样式 ================= */
+        .screenshot-btn-wrapper {
+            position: fixed;
+            left: 40px;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 1000;
+        }
+        .camera-btn {
+            width: 56px;
+            height: 56px;
+            border: none; 
+            border-radius: 50%;
+            background: #ffffff;
+            color: #555;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            outline: none;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        }
+        .camera-btn:hover {
+            color: var(--primary-red);
+            box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+            transform: translateY(-2px);
+        }
+        .camera-btn:active {
+            transform: translateY(0) scale(0.95);
+        }
+        .camera-btn svg {
+            width: 24px;
+            height: 24px;
+        }
+
+        .screenshot-modal {
+            display: none;
+            position: fixed;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(0, 0, 0, 0.6);
+            z-index: 2000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            backdrop-filter: blur(2px);
+        }
+        .modal-content {
+            background: #fff;
+            border-radius: 12px;
+            padding: 20px;
+            max-width: 90vw;
+            max-height: 90vh;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+        }
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        .modal-title {
+            font-size: 18px;
+            font-weight: 600;
+            color: #333;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 24px;
+            color: #999;
+            cursor: pointer;
+            line-height: 1;
+        }
+        .modal-close:hover {
+            color: #333;
+        }
+        .modal-body {
+            flex: 1;
+            overflow: auto;
+            text-align: center;
+            background: #f0f0f0;
+            border-radius: 6px;
+            padding: 10px;
+        }
+        .modal-body img {
+            max-width: 100%;
+            max-height: 60vh;
+            object-fit: contain;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            background-color: #fff;
+        }
+        .modal-footer {
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            margin-top: 16px;
+        }
+        /* 复用主样式中的按钮风格 */
+        .btn-primary {
+            padding: 10px 24px;
+            border-radius: 6px;
+            font-size: 14.5px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background-color 0.3s, border-color 0.3s;
+            font-family: inherit;
+            background-color: var(--primary-red);
+            color: #ffffff;
+            border: 1px solid var(--primary-red);
+            box-shadow: 0 2px 4px rgba(211, 17, 17, 0.2);
+        }
+        .btn-primary:hover {
+            background-color: #b30e0e;
+            border-color: #b30e0e;
+        }
     </style>
 </head>
 <body>
+
+    <!-- 左侧悬浮的截图按钮 -->
+    <div class="screenshot-btn-wrapper">
+        <button class="camera-btn" id="screenshotBtn" title="截图预览">
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path>
+                <circle cx="12" cy="13" r="4"></circle>
+            </svg>
+        </button>
+    </div>
+
     <div class="layout-wrapper">
-        <!-- 左侧文档区域 -->
-        <div class="document-paper">
+        <!-- 左侧文档区域 (添加了 id 用于截图) -->
+        <div class="document-paper" id="target-document">
             <!-- 顶部 Logo -->
             <div class="logo-container">
                 <img src="images/logo.png" alt="Kennet Logo" class="logo-img" decoding="async">
@@ -336,9 +468,27 @@
             </noscript>
         </div>
     </div>
+
+    <!-- 截图预览模态框 -->
+    <div class="screenshot-modal" id="screenshotModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <span class="modal-title">截图预览</span>
+                <button class="modal-close" id="closeModalBtn">&times;</button>
+            </div>
+            <div class="modal-body">
+                <img id="screenshotResult" src="" alt="截图结果">
+            </div>
+            <div class="modal-footer">
+                <button class="btn-primary" id="copyBtn">复制图片</button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript 交互逻辑 -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
+            /* ================= 原有交互逻辑 ================= */
             const inputCode = document.getElementById('input-code');
             const displayCode = document.getElementById('display-code');
             const inputAmount = document.getElementById('input-amount');
@@ -378,6 +528,109 @@
             }
             inputDate.addEventListener('input', handleDateChange);
             inputDate.addEventListener('change', handleDateChange);
+
+
+            /* ================= 新增：截图与复制逻辑 ================= */
+            const screenshotBtn = document.getElementById('screenshotBtn');
+            const targetDocument = document.getElementById('target-document'); // 指定截图目标为左侧合同
+            const modal = document.getElementById('screenshotModal');
+            const screenshotResult = document.getElementById('screenshotResult');
+            const closeModalBtn = document.getElementById('closeModalBtn');
+            const copyBtn = document.getElementById('copyBtn');
+            let currentImgData = '';
+
+            // 点击相机按钮 -> 生成截图
+            if (screenshotBtn && targetDocument) {
+                screenshotBtn.addEventListener('click', () => {
+                    screenshotBtn.style.opacity = '0.5';
+                    
+                    html2canvas(targetDocument, {
+                        scale: 2, // 高清
+                        useCORS: true, // 允许加载跨域图片（如 logo, 签名等）
+                        backgroundColor: '#ffffff' // 确保背景为白色
+                    }).then(canvas => {
+                        currentImgData = canvas.toDataURL('image/png');
+                        screenshotResult.src = currentImgData;
+                        modal.style.display = 'flex';
+                        screenshotBtn.style.opacity = '1';
+                    }).catch(err => {
+                        console.error('截图失败:', err);
+                        alert('截图生成失败，请检查图片跨域问题。');
+                        screenshotBtn.style.opacity = '1';
+                    });
+                });
+            }
+
+            // 关闭模态框逻辑
+            const closeModal = () => {
+                modal.style.display = 'none';
+                setTimeout(() => {
+                    screenshotResult.src = '';
+                    currentImgData = '';
+                    // 重置复制按钮状态
+                    copyBtn.innerText = '复制图片';
+                    copyBtn.style.backgroundColor = '';
+                    copyBtn.style.borderColor = '';
+                }, 300);
+            };
+
+            // 点击 X 关闭
+            if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+
+            // 点击遮罩层关闭
+            modal.addEventListener('click', (e) => {
+                if (e.target === modal) closeModal();
+            });
+
+            // 监听 Esc 键关闭
+            window.addEventListener('keydown', (e) => {
+                if (e.key === 'Escape' && modal.style.display === 'flex') {
+                    closeModal();
+                }
+            });
+
+            // 复制图片功能（无弹窗，按钮变绿反馈）
+            copyBtn.addEventListener('click', async () => {
+                if (!currentImgData) return;
+
+                const originalText = '复制图片';
+                
+                try {
+                    const response = await fetch(currentImgData);
+                    const blob = await response.blob();
+                    
+                    await navigator.clipboard.write([
+                        new ClipboardItem({
+                            [blob.type]: blob
+                        })
+                    ]);
+                    
+                    // 成功反馈
+                    copyBtn.innerText = '已复制 ✓';
+                    copyBtn.style.backgroundColor = '#38b26c'; // 绿色
+                    copyBtn.style.borderColor = '#38b26c';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                        copyBtn.style.backgroundColor = '';
+                        copyBtn.style.borderColor = '';
+                    }, 1500);
+
+                } catch (err) {
+                    console.error('复制失败:', err);
+                    
+                    // 失败反馈
+                    copyBtn.innerText = '复制失败';
+                    copyBtn.style.backgroundColor = '#ff5f56';
+                    copyBtn.style.borderColor = '#ff5f56';
+                    
+                    setTimeout(() => {
+                        copyBtn.innerText = originalText;
+                        copyBtn.style.backgroundColor = '';
+                        copyBtn.style.borderColor = '';
+                    }, 1500);
+                }
+            });
         });
     </script>
 </body>
