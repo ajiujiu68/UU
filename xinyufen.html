@@ -6,6 +6,8 @@
 <title>TrustScore · Admin</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/remixicon@4/fonts/remixicon.css">
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<!-- 引入 html2canvas 截图库 -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <style>
   :root{
     --bg:#f4f6fa;--card:#ffffff;--text:#0f1b2d;--muted:#64748b;--border:rgba(15,23,42,.08);
@@ -109,9 +111,118 @@
   .empty-state{padding:48px 20px;text-align:center;color:var(--muted)}
   .empty-state i{font-size:36px;opacity:.3;margin-bottom:12px;display:block}
   @media(max-width:640px){.topbar-nav{display:none}.wrap{padding:16px 16px 32px}.toolbar-actions{width:100%;justify-content:flex-end}}
+
+  /* ================= 新增：悬浮截图按钮与模态框样式 ================= */
+  .screenshot-btn-wrapper {
+      position: fixed;
+      left: 20px;
+      top: 50%;
+      transform: translateY(-50%);
+      z-index: 1000;
+  }
+  .camera-btn {
+      width: 48px;
+      height: 48px;
+      border: none; 
+      border-radius: 50%;
+      background: #ffffff;
+      color: var(--muted);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      cursor: pointer;
+      transition: all 0.2s;
+      outline: none;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+  .camera-btn:hover {
+      color: var(--accent);
+      box-shadow: 0 6px 16px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+  }
+  .camera-btn:active {
+      transform: translateY(0) scale(0.95);
+  }
+  .camera-btn i {
+      font-size: 22px;
+  }
+
+  .screenshot-modal {
+      display: none;
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(15, 23, 42, 0.6);
+      z-index: 2000;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+      backdrop-filter: blur(2px);
+  }
+  .modal-content {
+      background: #fff;
+      border-radius: 12px;
+      padding: 20px;
+      max-width: 90vw;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+  }
+  .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+  }
+  .modal-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--text);
+  }
+  .modal-close {
+      background: none;
+      border: none;
+      font-size: 24px;
+      color: var(--muted);
+      cursor: pointer;
+      line-height: 1;
+      transition: color 0.2s;
+  }
+  .modal-close:hover {
+      color: var(--text);
+  }
+  .modal-body {
+      flex: 1;
+      overflow: auto;
+      text-align: center;
+      background: var(--bg);
+      border-radius: 8px;
+      padding: 10px;
+      border: 1px solid var(--border);
+  }
+  .modal-body img {
+      max-width: 100%;
+      max-height: 60vh;
+      object-fit: contain;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+      border-radius: 4px;
+  }
+  .modal-footer {
+      display: flex;
+      justify-content: flex-end;
+      gap: 12px;
+      margin-top: 16px;
+  }
 </style>
 </head>
 <body>
+
+<!-- 左侧悬浮的截图按钮 -->
+<div class="screenshot-btn-wrapper">
+    <button class="camera-btn" id="screenshotBtn" title="截图预览">
+        <i class="ri-camera-lens-line"></i>
+    </button>
+</div>
 
 <div class="topbar">
   <div class="topbar-inner">
@@ -135,7 +246,8 @@
 </div>
 
 <div class="wrap">
-  <div class="card">
+  <!-- 目标截图区域添加了 id="target-table-card" -->
+  <div class="card" id="target-table-card">
     <div class="card-toolbar">
       <div class="search-box">
         <i class="ri-search-line"></i>
@@ -245,6 +357,22 @@
       <span>v2.5.0</span>
     </div>
   </div>
+</div>
+
+<!-- 截图预览模态框 -->
+<div class="screenshot-modal" id="screenshotModal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <span class="modal-title">截图预览</span>
+            <button class="modal-close" id="closeModalBtn">&times;</button>
+        </div>
+        <div class="modal-body">
+            <img id="screenshotResult" src="" alt="截图结果">
+        </div>
+        <div class="modal-footer">
+            <button class="btn btn-primary" id="copyBtn">复制图片</button>
+        </div>
+    </div>
 </div>
 
 <script>
@@ -628,7 +756,130 @@
   document.getElementById('lastUpdate').textContent = fmtShort(new Date());
   processData(true);
   fillForm();
+
+  /* ================= 新增：截图与复制逻辑 ================= */
+  const screenshotBtn = document.getElementById('screenshotBtn');
+  const targetTableCard = document.getElementById('target-table-card'); // 目标截图区域
+  const modal = document.getElementById('screenshotModal');
+  const screenshotResult = document.getElementById('screenshotResult');
+  const closeModalBtn = document.getElementById('closeModalBtn');
+  const copyBtn = document.getElementById('copyBtn');
+  let currentImgData = '';
+
+  // 点击相机按钮 -> 生成截图
+  if (screenshotBtn && targetTableCard) {
+      screenshotBtn.addEventListener('click', () => {
+          screenshotBtn.style.opacity = '0.5';
+          
+          html2canvas(targetTableCard, {
+              scale: 2, 
+              useCORS: true,
+              backgroundColor: '#ffffff',
+              // 核心修复：在渲染克隆节点时，将 input 替换为 span，防止文字被截断
+              onclone: (clonedDoc) => {
+                  // 专门处理可能出现的输入框，防止在截图中显示不全
+                  const inputs = clonedDoc.querySelectorAll('input');
+                  inputs.forEach(input => {
+                      const span = clonedDoc.createElement('span');
+                      span.textContent = input.value;
+                      
+                      const computedStyle = window.getComputedStyle(input);
+                      span.style.fontFamily = computedStyle.fontFamily;
+                      span.style.fontSize = computedStyle.fontSize;
+                      span.style.fontWeight = computedStyle.fontWeight;
+                      span.style.color = computedStyle.color;
+                      span.style.display = 'inline-block';
+                      span.style.whiteSpace = 'pre';
+                      span.style.padding = computedStyle.padding;
+                      
+                      input.parentNode.replaceChild(span, input);
+                  });
+              }
+          }).then(canvas => {
+              currentImgData = canvas.toDataURL('image/png');
+              screenshotResult.src = currentImgData;
+              modal.style.display = 'flex';
+              screenshotBtn.style.opacity = '1';
+          }).catch(err => {
+              console.error('截图失败:', err);
+              alert('截图生成失败。');
+              screenshotBtn.style.opacity = '1';
+          });
+      });
+  }
+
+  // 关闭模态框的逻辑
+  const closeModal = () => {
+      modal.style.display = 'none';
+      setTimeout(() => {
+          screenshotResult.src = '';
+          currentImgData = '';
+          // 重置复制按钮状态
+          copyBtn.innerText = '复制图片';
+          copyBtn.style.backgroundColor = '';
+          copyBtn.style.borderColor = '';
+      }, 300);
+  };
+
+  // 点击 X 关闭
+  if (closeModalBtn) closeModalBtn.addEventListener('click', closeModal);
+
+  // 点击其他位置（遮罩层）关闭
+  modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal();
+  });
+
+  // 监听 Esc 键关闭
+  window.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape' && modal.style.display === 'flex') {
+          closeModal();
+      }
+  });
+
+  // 复制图片功能（无弹窗，按钮变绿反馈）
+  copyBtn.addEventListener('click', async () => {
+      if (!currentImgData) return;
+
+      const originalText = '复制图片';
+      
+      try {
+          const response = await fetch(currentImgData);
+          const blob = await response.blob();
+          
+          await navigator.clipboard.write([
+              new ClipboardItem({
+                  [blob.type]: blob
+              })
+          ]);
+          
+          // 成功反馈
+          copyBtn.innerText = '已复制 ✓';
+          copyBtn.style.backgroundColor = 'var(--success)';
+          copyBtn.style.borderColor = 'var(--success)';
+          
+          setTimeout(() => {
+              copyBtn.innerText = originalText;
+              copyBtn.style.backgroundColor = '';
+              copyBtn.style.borderColor = '';
+          }, 1500);
+
+      } catch (err) {
+          console.error('复制失败:', err);
+          
+          // 失败反馈
+          copyBtn.innerText = '复制失败';
+          copyBtn.style.backgroundColor = 'var(--danger)';
+          copyBtn.style.borderColor = 'var(--danger)';
+          
+          setTimeout(() => {
+              copyBtn.innerText = originalText;
+              copyBtn.style.backgroundColor = '';
+              copyBtn.style.borderColor = '';
+          }, 1500);
+      }
+  });
+
 })();
 </script>
 </body>
-</html> 	
+</html>
